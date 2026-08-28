@@ -1,0 +1,57 @@
+name: tests
+
+# Push runs only on main; branch pushes are covered by the pull_request
+# trigger, so a PR branch is not tested twice.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: micron-art
+
+jobs:
+  python:
+    name: python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # No install step: the converter has zero runtime dependencies and
+      # the test file needs no runner.
+      - name: Fixture tests
+        run: python3 tests/test_converter.py
+
+      # tests/test_converter.py covers the library. This covers argument
+      # handling and the stdout/stderr split, which it does not.
+      - name: CLI smoke test
+        working-directory: micron-art/src/cli
+        run: |
+          set -euo pipefail
+          # Tabs expand to stop 4, wrapped in a literal block. Newlines
+          # are folded to | so the expectation stays on one line.
+          printf 'a\tb\n' | python3 -m micronart -m literal | tr '\n' '|' \
+            | grep -qx '`=|a   b|`=|' \
+            || { echo 'unexpected literal output'; exit 1; }
+          # Markup on stdout, warnings on stderr.
+          printf '\033[5mX\033[0m\n' | python3 -m micronart -m escaped 2>err.txt >out.txt
+          grep -q 'blink' err.txt || { echo 'warning missing from stderr'; exit 1; }
+          grep -qx 'X' out.txt || { echo 'markup missing from stdout'; exit 1; }
+          rm -f err.txt out.txt
+
+  # The JavaScript job is added with the JS implementation. It will run
+  # the same fixtures through node's built-in test runner, so the two
+  # implementations are checked against one source of truth. Keeping it
+  # out until then avoids a job that passes by having nothing to do.
