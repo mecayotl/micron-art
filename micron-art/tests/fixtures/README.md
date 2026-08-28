@@ -26,9 +26,21 @@ The art is wrapped in Micron literal mode and emitted verbatim:
     <art, byte for byte>
     `=
 
-Nothing inside the block is escaped. Micron disables all markup parsing
-between the two `` `= `` toggles, so the art is monochrome — colour tags
-inside a literal block render as text, they do not apply.
+Nothing inside the block is escaped — with exactly one exception.
+Micron disables all markup parsing between the two `` `= `` toggles, so
+the art is monochrome; colour tags inside a literal block render as text,
+they do not apply.
+
+**The one exception:** a line consisting of exactly `` `= `` toggles
+literal mode *even from inside a literal block*. Art containing such a
+line breaks out of its own block — the line vanishes and everything after
+it is parsed as markup. It must be written as `` \`= ``, which is the
+only escape literal mode honours. See `literal-toggle`.
+
+This leaves one input that literal mode **cannot represent**: art whose
+line is exactly `` \`= ``. Written verbatim it renders as `` `= ``, and
+there is no second level of escaping. Use escaped mode for that art. No
+fixture covers it because no correct output exists.
 
 ### `.escaped.mu` — escaped mode
 
@@ -53,6 +65,20 @@ insert a leading space instead.
 Inline they are ordinary text and must not be escaped — see
 `figlet-banner`, which contains a bare `<` mid-line.
 
+## Normalization
+
+Both modes run the same normalization before anything else. Order matters:
+
+1. **Line endings** — CRLF and lone CR both become LF. A stray `\r` is
+   measured as zero columns by urwid but still acts on the terminal, so
+   it shears the line. See `crlf`.
+2. **Tabs** — expanded to spaces, tab stop 4, column-aware. See below.
+3. **Split into lines**, then apply the mode's rules.
+4. **Emit with a trailing newline.** Input without one is normalized to
+   have one. See `no-trailing-newline`.
+
+Escaping happens *after* normalization, never before.
+
 ## Naming
 
 `<name>` describes the hazard being exercised, not the picture. One
@@ -73,6 +99,13 @@ and `.ans` for ANSI/SGR art.
 | `wide-200col` | a single 210-char line, over the 130-char warn limit |
 | `figlet-banner` | realistic block-letter banner; inline `<`, many `\` |
 | `empty-lines` | blank lines in the middle of the art |
+| `literal-toggle` | a bare `` `= `` line, which breaks out of literal mode |
+| `crlf` | CRLF line endings |
+| `unicode-box` | box-drawing and shade glyphs, 1 column each |
+| `wide-cjk` | double-width glyphs; alignment holds only in columns |
+| `width-boundary` | lines of exactly 129, 130 and 131 columns |
+| `empty-file` | zero-byte input |
+| `no-trailing-newline` | input with no final newline |
 | `chafa-output` | ANSI/SGR colour input (placeholder, not yet written) |
 
 ## Tab expansion
@@ -97,6 +130,29 @@ The input fixture keeps its raw tabs; only the expected files are
 expanded. Tab stop 4 is a project decision, not a Micron requirement —
 terminals default to 8, but ASCII art is usually drawn against 4.
 
+## Conventions, not derived facts
+
+Three choices here are project conventions. They are not forced by the
+Micron parser, and a reviewer may reasonably want them changed:
+
+- **Tab stop 4** (above). That tabs must be expanded *at all* is forced;
+  the stop width is not.
+- **Empty input produces empty output** in both modes, rather than an
+  empty `` `= `` block. See `empty-file`.
+- **Output always ends with a newline**, including when the input did
+  not. See `no-trailing-newline`.
+
+Everything under "How these were verified" is the opposite: observed
+parser behaviour, not preference.
+
+## Column width
+
+Both implementations must measure display **columns**, not string length.
+Python gets this from urwid; JavaScript has no built-in equivalent and
+needs an explicit wcwidth-style table. `unicode-box` and `wide-cjk` exist
+to catch that divergence, and the 130-column warn threshold in
+`width-boundary` is meaningless if measured in characters.
+
 ## How these were verified
 
 Each expected file was rendered through the real NomadNet Micron parser
@@ -118,6 +174,14 @@ Facts established by that check, rather than assumed:
 - A line consisting of exactly `` `= `` toggles literal mode, even from
   inside a literal block. Art containing such a line will break out of
   the block. Inside literal mode, `` \`= `` is the escaped form.
+- A line of exactly `` `= `` toggles literal mode from *inside* a literal
+  block. A naive verbatim wrap silently drops that line and parses the
+  remainder as markup — verified: 5 art lines in, 4 rendered out.
+- Carriage returns are measured as **zero columns** and passed through,
+  same shear class as tabs. They must be stripped, not escaped.
+- Width is **columns, not characters**. Box-drawing and shade glyphs are
+  1 column; CJK glyphs are 2. In `wide-cjk` the aligned rows have
+  character counts of 9 and 12 but both measure 12 columns.
 - Tabs are passed through raw and urwid measures them as **zero columns**
   while the terminal expands them to a tab stop, so raw tabs shear the
   line. Tabs are therefore expanded to spaces before output — see
