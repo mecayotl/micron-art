@@ -51,7 +51,21 @@ jobs:
           grep -qx 'X' out.txt || { echo 'markup missing from stdout'; exit 1; }
           rm -f err.txt out.txt
 
-  # The JavaScript job is added with the JS implementation. It will run
-  # the same fixtures through node's built-in test runner, so the two
-  # implementations are checked against one source of truth. Keeping it
-  # out until then avoids a job that passes by having nothing to do.
+  javascript:
+    name: node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["18", "20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # No install step: zero runtime dependencies, and the tests use
+      # node's built-in runner rather than a test framework.
+      - name: Fixture tests
+        run: node --test tests/

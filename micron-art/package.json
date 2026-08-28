@@ -1,0 +1,10 @@
+{
+  "name": "micron-art",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Convert ASCII/ANSI art into NomadNet Micron markup",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}
