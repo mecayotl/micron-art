@@ -68,4 +68,4 @@ jobs:
       # No install step: zero runtime dependencies, and the tests use
       # node's built-in runner rather than a test framework.
       - name: Fixture tests
-        run: node --test tests/
+        run: node --test tests/*.test.js
