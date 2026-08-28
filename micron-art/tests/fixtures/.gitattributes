@@ -1,0 +1,3 @@
+# crlf.txt must keep its CRLF bytes on every platform, or the fixture
+# stops testing the thing it exists to test.
+input/crlf.txt -text
