@@ -103,7 +103,6 @@ and `.ans` for ANSI/SGR art.
 | `crlf` | CRLF line endings |
 | `unicode-box` | box-drawing and shade glyphs, 1 column each |
 | `wide-cjk` | double-width glyphs; alignment holds only in columns |
-| `width-boundary` | lines of exactly 129, 130 and 131 columns (see note) |
 | `empty-file` | zero-byte input |
 | `no-trailing-newline` | input with no final newline |
 | `ansi-16color` | SGR 30-37 / 90-97, xterm palette |
@@ -156,12 +155,10 @@ Python gets this from urwid; JavaScript has no built-in equivalent and
 needs an explicit wcwidth-style table. `unicode-box` and `wide-cjk` exist
 to catch that divergence.
 
-**Note on `width-boundary`:** it was written to pin a 130-column warning
-threshold that has since been removed from the project constraints — the
-MeshChat limit does not apply to art hosted on a NomadNet site over
-Reticulum. The fixture still round-trips and still costs nothing, but it
-no longer guards a behaviour. Delete it or repurpose it; it should not
-sit here implying a limit that is not enforced.
+There is no maximum line width. The 130-column MeshChat limit does not
+apply to art hosted on a NomadNet site over Reticulum, so nothing here
+guards a width threshold; `wide-200col` exists to prove long lines
+survive, not to mark a boundary.
 
 ## ANSI colour
 
