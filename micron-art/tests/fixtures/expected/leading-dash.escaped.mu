@@ -1,0 +1,6 @@
+\--- MENU ---
+\- new game
+\- load game
+\- quit
+\-
+\------------
