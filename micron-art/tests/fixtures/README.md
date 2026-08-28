@@ -109,7 +109,7 @@ and `.ans` for ANSI/SGR art.
 | `ansi-256color` | SGR 38;5;N — cube, greyscale ramp and base 16 |
 | `ansi-truecolor` | SGR 38;2;R;G;B, foreground and background |
 | `ansi-attributes` | bold, italic, underline, reverse, dropped blink |
-| `chafa-output` | realistic truecolor half-block output |
+| `chafa-output` | genuine chafa truecolor half-block output |
 
 ## Tab expansion
 
@@ -222,6 +222,52 @@ character, since the line no longer begins with `-` `#` `>` `<`. The
 escape is still applied uniformly — verified that `` `Fc00\- `` renders
 `-` correctly — so the escaping rule does not need a colour-aware
 special case.
+
+### Regenerating `chafa-output`
+
+`chafa-output.ans` is **real chafa output**, not hand-written. The source
+image is committed at `src/chafa-source.png` — an 8x8 PNG with a smooth
+gradient on the left half and two flat blocks with a hard edge on the
+right, so the fixture exercises both per-cell colour changes and runs
+that collapse to a single tag.
+
+Generated with chafa 1.14.0:
+
+    chafa --format symbols --size 8x4 --stretch --symbols half \
+          --fill none --colors full --dither none --color-space rgb \
+          --optimize 5 --polite on src/chafa-source.png \
+          > input/chafa-output.ans
+
+Every flag is pinned deliberately. chafa otherwise probes the terminal
+and picks symbols, colour depth and optimization to match it, so
+unpinned output drifts between environments and the fixture stops being
+reproducible. `--optimize 5` is chafa's default and is kept rather than
+lowered: at `-O 0` chafa emits a full reset and both colours before
+every cell, while at `-O 5` it drops redundant tags and shares one tag
+across a run of glyphs. The compact form is what a user actually pastes,
+and it exercises colour state carried between cells.
+
+The source image is reproducible too:
+
+    from PIL import Image
+    img = Image.new("RGB", (8, 8)); px = img.load()
+    for y in range(8):
+        for x in range(8):
+            if x < 4: px[x, y] = (x*60, 40 + y*28, 200 - y*24)
+            else:     px[x, y] = (220, 30, 30) if y < 4 else (20, 60, 220)
+    img.save("src/chafa-source.png")
+
+Note that chafa's `half` symbol class includes vertical half blocks
+(`▌`) as well as horizontal ones (`▄`), and it uses both here.
+
+### Non-SGR escape sequences
+
+Symbol-format chafa output contains only SGR (`ESC [ ... m`) sequences —
+verified across optimization levels. Other escape sequences do not
+appear and are not handled. If input is ever accepted from a source that
+emits cursor positioning (chafa's `--relative on`, or the sixel and
+kitty formats), that assumption breaks and unhandled sequences would
+land in the art as literal text.
 
 ## How these were verified
 
