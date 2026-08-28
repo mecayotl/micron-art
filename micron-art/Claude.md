@@ -5,7 +5,7 @@ Micron (.mu) markup. Site is static, hosted on GitHub Pages from root.
 
 ## Hard constraints
 
-- No npm, no build step, no bundler. Zero runtime dependencies.
+- No npm. No build step. No bundler. Zero runtime dependencies.
 - Browser code is ES modules in `src/`, loaded via
   `<script type="module">`. Dev server: `python3 -m http.server 8000`
   (module imports fail over file://).
@@ -26,7 +26,6 @@ Micron (.mu) markup. Site is static, hosted on GitHub Pages from root.
   literal (monochrome) and escaped (colorizable). Not interchangeable.
 - Never center multi-line art with `c — it centers each line
   independently and shears the shape.
-- Warn above 130 chars/line (MeshChat limit).
 
 ## Workflow
 

@@ -96,17 +96,20 @@ and `.ans` for ANSI/SGR art.
 | `leading-angle` | line-leading `>` and `<`, single and repeated |
 | `tabs-mixed` | mixed tabs and spaces, expanded to **tab stop 4** |
 | `trailing-space` | meaningful trailing whitespace |
-| `wide-200col` | a single 210-char line, over the 130-char warn limit |
+| `wide-200col` | a single 210-column line |
 | `figlet-banner` | realistic block-letter banner; inline `<`, many `\` |
 | `empty-lines` | blank lines in the middle of the art |
 | `literal-toggle` | a bare `` `= `` line, which breaks out of literal mode |
 | `crlf` | CRLF line endings |
 | `unicode-box` | box-drawing and shade glyphs, 1 column each |
 | `wide-cjk` | double-width glyphs; alignment holds only in columns |
-| `width-boundary` | lines of exactly 129, 130 and 131 columns |
 | `empty-file` | zero-byte input |
 | `no-trailing-newline` | input with no final newline |
-| `chafa-output` | ANSI/SGR colour input (placeholder, not yet written) |
+| `ansi-16color` | SGR 30-37 / 90-97, xterm palette |
+| `ansi-256color` | SGR 38;5;N — cube, greyscale ramp and base 16 |
+| `ansi-truecolor` | SGR 38;2;R;G;B, foreground and background |
+| `ansi-attributes` | bold, italic, underline, reverse, dropped blink |
+| `chafa-output` | genuine chafa truecolor half-block output |
 
 ## Tab expansion
 
@@ -150,8 +153,121 @@ parser behaviour, not preference.
 Both implementations must measure display **columns**, not string length.
 Python gets this from urwid; JavaScript has no built-in equivalent and
 needs an explicit wcwidth-style table. `unicode-box` and `wide-cjk` exist
-to catch that divergence, and the 130-column warn threshold in
-`width-boundary` is meaningless if measured in characters.
+to catch that divergence.
+
+There is no maximum line width. The 130-column MeshChat limit does not
+apply to art hosted on a NomadNet site over Reticulum, so nothing here
+guards a width threshold; `wide-200col` exists to prove long lines
+survive, not to mark a boundary.
+
+## ANSI colour
+
+`.ans` inputs carry SGR colour. The two modes diverge sharply here:
+
+- **literal** — literal mode disables all markup, so colour is
+  impossible. All SGR is stripped and only the glyphs survive. This is
+  the monochrome fallback, not a lesser version of escaped mode.
+- **escaped** — SGR is translated to Micron colour tags.
+
+### Colour depth
+
+Micron colour is **12-bit: 3 hex nibbles**, e.g. `` `Ff80 `` for
+foreground and `` `Bf80 `` for background. This is not a style choice —
+the parser reads exactly three characters after `F`/`B` and no more.
+`` `Fff0000 `` sets colour `ff0` and then renders the literal text
+`0000`. `low_color`/`high_color` contain a six-digit branch, but markup
+cannot reach it; it serves only the page-level default colours.
+
+Every source colour is therefore quantized to 4 bits per channel.
+
+### Mapping rules
+
+| source | rule |
+|---|---|
+| 24-bit `38;2;R;G;B` | direct |
+| 8-bit `38;5;N` | xterm 256: cube levels `0,95,135,175,215,255`; greys `8+10n` |
+| 4-bit `30-37`, `90-97` | xterm default palette, tabulated below |
+| quantization | `round(v / 17)` per channel — **round, not truncate** |
+| `1` / `3` / `4` | `` `! `` / `` `* `` / `` `_ `` |
+| `7` reverse | swap foreground and background |
+| `2` faint, `5` blink | no Micron equivalent — dropped, with a warning |
+| `39` / `49` | `` `f `` / `` `b `` |
+
+Truncation (`v >> 4`) would bias every image darker by up to 6% for the
+same cost, so rounding is used. Greys are emitted as ordinary RGB
+nibbles; Micron's `` `gNN `` ramp offers 100 levels instead of 16 but is
+a second code path to keep identical across two implementations, so it
+is deliberately unused.
+
+The base-16 palette is theme-dependent in real terminals. It is pinned
+to xterm's defaults so both implementations agree:
+
+    0-7   000000 cd0000 00cd00 cdcd00 0000ee cd00cd 00cdcd e5e5e5
+    8-15  7f7f7f ff0000 00ff00 ffff00 5c5cff ff00ff 00ffff ffffff
+
+### Emission
+
+Tags are emitted **only when the colour changes**, not per cell — a
+per-cell encoding costs ten characters of markup per glyph.
+
+**Colour state persists across lines.** Verified: `` `Ff00RED `` followed
+by a plain line renders *both* lines red. State is therefore carried
+across the whole document and reset once at the end with `` `` ``. A
+per-line reset would be larger, not smaller, because the colour then has
+to be re-emitted at every line start. The trailing reset matters: without
+it, colour leaks into whatever follows the art on the page.
+
+A line-leading colour tag incidentally protects a line-leading block
+character, since the line no longer begins with `-` `#` `>` `<`. The
+escape is still applied uniformly — verified that `` `Fc00\- `` renders
+`-` correctly — so the escaping rule does not need a colour-aware
+special case.
+
+### Regenerating `chafa-output`
+
+`chafa-output.ans` is **real chafa output**, not hand-written. The source
+image is committed at `src/chafa-source.png` — an 8x8 PNG with a smooth
+gradient on the left half and two flat blocks with a hard edge on the
+right, so the fixture exercises both per-cell colour changes and runs
+that collapse to a single tag.
+
+Generated with chafa 1.14.0:
+
+    chafa --format symbols --size 8x4 --stretch --symbols half \
+          --fill none --colors full --dither none --color-space rgb \
+          --optimize 5 --polite on src/chafa-source.png \
+          > input/chafa-output.ans
+
+Every flag is pinned deliberately. chafa otherwise probes the terminal
+and picks symbols, colour depth and optimization to match it, so
+unpinned output drifts between environments and the fixture stops being
+reproducible. `--optimize 5` is chafa's default and is kept rather than
+lowered: at `-O 0` chafa emits a full reset and both colours before
+every cell, while at `-O 5` it drops redundant tags and shares one tag
+across a run of glyphs. The compact form is what a user actually pastes,
+and it exercises colour state carried between cells.
+
+The source image is reproducible too:
+
+    from PIL import Image
+    img = Image.new("RGB", (8, 8)); px = img.load()
+    for y in range(8):
+        for x in range(8):
+            if x < 4: px[x, y] = (x*60, 40 + y*28, 200 - y*24)
+            else:     px[x, y] = (220, 30, 30) if y < 4 else (20, 60, 220)
+    img.save("src/chafa-source.png")
+
+Note that chafa's `half` symbol class includes vertical half blocks
+(`▌`) as well as horizontal ones (`▄`), and it uses both here.
+
+### Non-SGR escape sequences
+
+Symbol-format chafa output contains only SGR (`ESC [ ... m`) sequences —
+verified across optimization levels. Other escape sequences do not
+appear and are not handled. If input is ever accepted from a source that
+emits cursor positioning (chafa's `--relative on`, or the sixel and
+kitty formats), that assumption breaks and unhandled sequences would
+land in the art as literal text.
 
 ## How these were verified
 
@@ -159,6 +275,11 @@ Each expected file was rendered through the real NomadNet Micron parser
 (`nomadnet/ui/textui/MicronParser.py`) and the resulting terminal rows
 compared against the original input art. All expected files round-trip
 to the input exactly. Re-run that check when changing an expected file.
+
+For `.ans` fixtures the check is stronger: every rendered character is
+compared against its source cell for **both glyph and colour attribute**,
+so a wrong quantization or a dropped tag fails rather than passing
+silently. All 135 coloured cells match.
 
 Facts established by that check, rather than assumed:
 
