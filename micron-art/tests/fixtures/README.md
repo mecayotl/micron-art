@@ -175,7 +175,8 @@ Micron colour is **12-bit: 3 hex nibbles**, e.g. `` `Ff80 `` for
 foreground and `` `Bf80 `` for background. This is not a style choice —
 the parser reads exactly three characters after `F`/`B` and no more.
 `` `Fff0000 `` sets colour `ff0` and then renders the literal text
-`0000`. `low_color`/`high_color` contain a six-digit branch, but markup
+`000` -- the tag eats five of the eight characters.
+`low_color`/`high_color` contain a six-digit branch, but markup
 cannot reach it; it serves only the page-level default colours.
 
 Every source colour is therefore quantized to 4 bits per channel.

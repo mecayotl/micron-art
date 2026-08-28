@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>micron-art</title>
+    <meta
+      name="description"
+      content="Convert ASCII and ANSI art into NomadNet Micron markup."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <h1>micron-art</h1>
+      <p class="tagline">ASCII and ANSI art to NomadNet Micron markup</p>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="art-heading">
+        <div class="panel-head">
+          <h2 id="art-heading">Art</h2>
+          <div class="panel-actions">
+            <label class="file-button">
+              Load file
+              <input id="file" type="file" accept=".txt,.ans,.asc,text/*" />
+            </label>
+            <button id="sample" type="button">Sample</button>
+            <button id="clear" type="button">Clear</button>
+          </div>
+        </div>
+        <textarea
+          id="art"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+          placeholder="Paste ASCII art, or pipe chafa output into a file and load it."
+          aria-describedby="art-hint"
+        ></textarea>
+        <p id="art-hint" class="hint">
+          ANSI colour is read from SGR escape sequences. Tabs are expanded to
+          stop 4; carriage returns are stripped.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="mode-heading">
+        <div class="panel-head">
+          <h2 id="mode-heading">Mode</h2>
+        </div>
+        <div class="modes" role="radiogroup" aria-labelledby="mode-heading">
+          <label class="mode">
+            <input type="radio" name="mode" value="literal" checked />
+            <span class="mode-name">Literal</span>
+            <span class="mode-note">
+              Wrapped in <code>`=</code> and emitted verbatim. Safe for any art,
+              but Micron disables markup inside the block, so it is monochrome.
+            </span>
+          </label>
+          <label class="mode">
+            <input type="radio" name="mode" value="escaped" />
+            <span class="mode-name">Escaped</span>
+            <span class="mode-note">
+              Each significant character escaped in place, so colour and
+              formatting survive. Required to keep ANSI colour.
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="output-heading">
+        <div class="panel-head">
+          <h2 id="output-heading">Micron</h2>
+          <div class="panel-actions">
+            <button id="copy" type="button">Copy</button>
+            <button id="download" type="button">Download .mu</button>
+          </div>
+        </div>
+        <textarea id="output" readonly spellcheck="false"></textarea>
+        <p class="hint">
+          <span id="stats"></span>
+        </p>
+        <div id="warnings" class="warnings" role="status" hidden></div>
+      </section>
+
+      <section class="panel" aria-labelledby="preview-heading">
+        <div class="panel-head">
+          <h2 id="preview-heading">Preview</h2>
+        </div>
+        <p class="hint">
+          The markup above, read back through a Micron reader. This is what
+          NomadNet should show — if it looks wrong here, it will look wrong
+          there.
+        </p>
+        <div id="preview" class="preview" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Two output modes, not interchangeable. Literal is monochrome; escaped
+        keeps colour. See
+        <code>tests/fixtures/README.md</code> for the escaping rules and why
+        they are what they are.
+      </p>
+    </footer>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
