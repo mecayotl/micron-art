@@ -3,8 +3,7 @@
 How `src/ansi.js` and `cli/micronart/ansi.py` handle SGR
 escape sequences. 
 
-The two implementations were compared across 694 SGR cases, including
-every one of the 256 palette indices in both foreground and background,
+The two implementations were compared across 694 SGR cases and 256 palette indices in both foreground and background,
 malformed sequences, attribute toggles in both directions, and
 multi-line color carry-over. 
 
