@@ -65,3 +65,80 @@ jobs:
       # node's built-in runner rather than a test framework.
       - name: Fixture tests
         run: node --test tests/*.test.js
+
+  examples:
+    name: examples are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # The .mu files under examples/ are generated from examples/art/.
+      # Rebuilding them here is what keeps the showcase honest: if the
+      # converter changes and nobody regenerates, the example pages stop
+      # demonstrating what the converter actually does.
+      - name: Regenerate
+        run: ./examples/regenerate.sh
+
+      # Two checks, because they catch different things. git diff sees
+      # modified and deleted files; it does not see a newly created one,
+      # which would be untracked.
+      - name: Fail if the generated pages drifted
+        run: |
+          set -euo pipefail
+          if ! git diff --exit-code -- examples/; then
+            echo
+            echo "examples/ is out of date. Run ./examples/regenerate.sh and commit the result."
+            exit 1
+          fi
+          untracked=$(git status --porcelain --untracked-files=all -- examples/)
+          if [ -n "$untracked" ]; then
+            echo "regenerating produced files that are not committed:"
+            echo "$untracked"
+            exit 1
+          fi
+
+  packaging:
+    name: cli installs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # The other jobs run the CLI as `python3 -m micronart` from src/cli,
+      # which never touches packaging at all. A broken pyproject.toml
+      # therefore passed CI and reached main once already: the README told
+      # people to run an install that failed outright.
+      #
+      # Both installs run the console script from /tmp, where the source
+      # tree is not importable, so a working entry point is what is being
+      # proved rather than the current directory.
+      - name: Editable install, as the README documents
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/venv-editable
+          /tmp/venv-editable/bin/pip install --quiet -e src/cli
+          cd /tmp
+          printf 'a\tb\n' | /tmp/venv-editable/bin/micronart -m literal | tr '\n' '|' \
+            | grep -qxF '`=|a   b|`=|' \
+            || { echo 'editable install produced unexpected output'; exit 1; }
+
+      # Editable installs skip most of the build, so a wheel is built and
+      # installed too. This catches a package that is missing modules.
+      - name: Wheel install
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/venv-wheel
+          /tmp/venv-wheel/bin/pip install --quiet src/cli
+          cd /tmp
+          printf '\033[31m-dash\033[0m\n' | /tmp/venv-wheel/bin/micronart -m escaped >out.txt 2>err.txt
+          grep -qxF '`Fc00\-dash``' out.txt \
+            || { echo 'wheel install produced unexpected output:'; cat out.txt; exit 1; }
+          printf '\033[5mX\033[0m\n' | /tmp/venv-wheel/bin/micronart -m escaped 2>warn.txt >/dev/null
+          grep -q 'blink' warn.txt || { echo 'warning missing from stderr'; exit 1; }
