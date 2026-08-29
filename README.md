@@ -7,14 +7,13 @@ Micron markup, so we can have neat art on our Reticulum pages.
 
 ![The converter with ASCII art loaded in literal mode, showing the art, the generated Micron and a preview of how it renders](docs/screenshot.png)
 
-ASCII art breaks when pasted into a .mu file. 
-Micron reads certain leading characters as formatting commands:
-- becomes a divider, # deletes the line, and > becomes a heading.
-This tool escapes them so ASCII & ANSI art renders as drawn.
+ASCII and ANSI art break sometimes when pasted into a .mu file. 
+That's because Micron reads certain leading characters 
+as formatting commands: - becomes a divider, # deletes the line, and > becomes a heading.
+This tool escapes them so ASCII & ANSI art render as drawn.
 
 A browser tool and Python CLI is provided. They share a set of fixed inputs 
 that are tested against, and are also tested against the expected output.
-There's no build step, no bundler, zero runtime dependencies.
 
 ## Two output modes
 **Literal** wraps the art in `` `= `` and displays it as it's originally seen.
@@ -26,7 +25,7 @@ This is the mode that keeps ANSI color.
 
 Above: `chafa` output pasted in, converted in escaped mode. The preview
 reads the generated markup back through a Micron reader, so it shows what
-NomadNet will render rather than a copy of the input.
+NomadNet will render.
 
 ## Quick start
 
@@ -54,18 +53,19 @@ and how static and executable pages differ.
 
 ## Local development
 
-No install and no build. Serve the repository root and open it:
+Clone the repo, then start a server.
+Double clicking index.html won't work since browsers block ES module imports over file://. 
 
+    git clone https://github.com/YOUR-USERNAME/micron-art.git
+    cd micron-art
     python3 -m http.server 8000
-
-Module imports fail over `file://`, so the server is required.
 
 Run the tests:
 
     node --test tests/*.test.js     # 114 tests
     python3 tests/test_converter.py # 56 tests
 
-Both tests read `tests/fixtures/`.
+Both tests read from `tests/fixtures/`.
 
 After changing the converter, rebuild the example pages and check nothing
 moved:
@@ -93,10 +93,7 @@ moved:
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The short version: write the
-fixture first, then make both implementations pass it. `Claude.md` holds
-the hard constraints — no build step, flat module graph, named exports
-only, and the Python mirroring the JavaScript exactly.
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Licence
 
