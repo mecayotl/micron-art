@@ -25,11 +25,11 @@ remain. That is not a degraded colour path; it is a different output.
 | `3` | italic | `` `* `` |
 | `4` | underline | `` `_ `` |
 | `5`, `6` | blink | dropped, **with a warning** |
-| `7` | reverse video | swaps foreground and background |
+| `7` | reverse video | swaps the colours **at emission** |
 | `22` | normal intensity | clears bold |
 | `23` | italic off | clears italic |
 | `24` | underline off | clears underline |
-| `27` | reverse off | swaps the colours back |
+| `27` | reverse off | clears the swap |
 | `30`–`37` | foreground, base 8 | `` `F `` + table below |
 | `38;5;N` | foreground, 256-colour | `` `F `` + cube/grey rules |
 | `38;2;R;G;B` | foreground, 24-bit | `` `F `` + quantization |
@@ -45,8 +45,8 @@ output. That includes `8` (conceal), `9` (strikethrough), `21`, `53`
 (overline), and any code with no meaning at all.
 
 Warnings are raised only for `2`, `5`, `6`, reverse video against a
-default colour, and a malformed extended-colour sequence. Everything
-else vanishes without comment.
+default colour, a malformed extended-colour sequence, and a colour value
+out of range. Everything else vanishes without comment.
 
 Tags are emitted only when the state changes, not per cell, and colour
 state carries across lines. A document that emitted any tag ends with a
@@ -73,11 +73,37 @@ Faint is not tracked here, so that part is a no-op.
 nothing, rather than swapping back. Use `27` for that. A `27` with no
 swap outstanding is likewise a no-op.
 
-Reverse video is applied by **swapping the two colours immediately**,
-not by carrying a reverse flag through to rendering. The two differ if a
-colour is set *after* the swap: here the new colour lands in the slot it
-names, whereas a terminal would swap at draw time. Art that sets a
-colour while reverse is active is the case to watch.
+## Reverse video
+
+Reverse is recorded as state and **resolved when a tag is written**, the
+way a terminal treats it: the colours keep the slots they were named for
+and the swap happens at draw time.
+
+That matters whenever colour and reverse are interleaved. Setting a
+foreground while reverse is active puts it in the *background*, because
+that is where it ends up once the swap is applied:
+
+    ESC[31;42;7m SWAP ESC[34m LATEFG
+      ->  `F0c0`Bc00SWAP`B00eLATEFG
+
+`SWAP` is green on red. `LATEFG` is still green on the *new* colour,
+because the blue foreground that was set second is what the swap moves
+to the background.
+
+Order no longer matters either. Reverse before any colour works, because
+nothing is resolved until emission:
+
+    ESC[7m ESC[31;42m AFTER   ->   `F0c0`Bc00AFTER
+
+`7` is idempotent and `27` simply clears the flag, so `7`/`27` can be
+paired in any order without accumulating swaps.
+
+Micron has no reverse attribute, so the swap must be written out as
+concrete colours. That is only possible when **both** sides are set.
+Swapping against a default would require the document's default colour
+as an explicit value, which is theme-dependent and not knowable at
+conversion time, so a one-sided reverse is dropped with a warning and
+the colours are emitted unswapped.
 
 ## Malformed extended-colour sequences
 
@@ -90,6 +116,17 @@ applied:
 | `ESC[38;5m` | no colour, malformed warning |
 | `ESC[38;2;1;2m` | no colour, malformed warning |
 | `ESC[38;9;1m` | no colour, malformed warning |
+
+A colour value outside `0`–`255` is treated the same way. `255` is the
+last valid palette index; `256` and above are rejected rather than
+resolved, which previously ran them through the grey-ramp formula and
+clamped them to white:
+
+| Input | Result |
+|---|---|
+| `ESC[38;5;255m` | grey 238, `eee` |
+| `ESC[38;5;256m` | no colour, out-of-range warning |
+| `ESC[38;2;300;0;0m` | no colour, out-of-range warning |
 
 Only the remainder of that one sequence is discarded. A later, separate
 sequence is unaffected — `ESC[38;5mBAD` `ESC[32mGOOD` leaves `BAD`
@@ -224,10 +261,9 @@ through RGB nibbles like everything else. Worth revisiting if greyscale
 conversion becomes a priority.
 
 **Attributes are thinner than ANSI.** Faint, blink, conceal,
-strikethrough and overline have no Micron equivalent. Reverse video is
-applied by swapping the two colours, which works only when both are
-explicitly set — against a default on either side there is nothing
-concrete to swap to, so it is dropped with a warning.
+strikethrough and overline have no Micron equivalent. Reverse video
+survives only when both colours are explicitly set, since the swap has to
+be written out as concrete values; see above.
 
 **Nothing is preserved for later.** Unsupported codes are discarded, not
 carried through as text or metadata. Converting is one-way: the `.mu`

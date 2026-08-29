@@ -32,9 +32,10 @@ class Style:
         self.bold = bold
         self.italic = italic
         self.underline = underline
-        # Bookkeeping only. Reverse is applied by swapping the colours as
-        # soon as it is seen, so nothing downstream reads this; it exists
-        # so that SGR 27 knows whether there is a swap to undo.
+        # Reverse video is recorded, not applied. The colours keep the
+        # slots they were named for and the swap happens at emission, so
+        # a colour set while reverse is active lands where a terminal
+        # would put it. See converter.effective_colors.
         self.reverse = reverse
 
     def copy(self):
@@ -65,16 +66,7 @@ def apply_sgr(style, params, warnings):
         elif code == 4:
             style.underline = True
         elif code == 7:
-            # Micron has no reverse-video attribute, so it is applied by
-            # swapping. With a default on either side there is nothing
-            # concrete to swap to.
-            if style.reverse:
-                pass  # already reversed; 7 is idempotent
-            elif style.fg is None or style.bg is None:
-                warnings.append("reverse video with a default colour: dropped")
-            else:
-                style.fg, style.bg = style.bg, style.fg
-                style.reverse = True
+            style.reverse = True
         elif code == 22:
             # Normal intensity. Also clears faint, which is not tracked.
             style.bold = False
@@ -83,9 +75,7 @@ def apply_sgr(style, params, warnings):
         elif code == 24:
             style.underline = False
         elif code == 27:
-            if style.reverse:
-                style.fg, style.bg = style.bg, style.fg
-                style.reverse = False
+            style.reverse = False
         elif code == 2:
             warnings.append("faint: no Micron equivalent, dropped")
         elif code in (5, 6):
@@ -105,10 +95,22 @@ def apply_sgr(style, params, warnings):
         elif code in (38, 48):
             is_fg = code == 38
             if i + 1 < len(codes) and codes[i + 1] == 5 and i + 2 < len(codes):
-                color = xterm256(codes[i + 2])
+                index = codes[i + 2]
+                if not 0 <= index <= 255:
+                    warnings.append(
+                        "colour index %d out of range: remainder ignored" % index
+                    )
+                    break
+                color = xterm256(index)
                 i += 2
             elif i + 1 < len(codes) and codes[i + 1] == 2 and i + 4 < len(codes):
-                color = (codes[i + 2], codes[i + 3], codes[i + 4])
+                rgb = (codes[i + 2], codes[i + 3], codes[i + 4])
+                if any(not 0 <= value <= 255 for value in rgb):
+                    warnings.append(
+                        "colour component out of range: remainder ignored"
+                    )
+                    break
+                color = rgb
                 i += 4
             else:
                 # The selector is missing or unparseable. Abandon the rest

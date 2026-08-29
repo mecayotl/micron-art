@@ -111,6 +111,8 @@ and `.ans` for ANSI/SGR art.
 | `ansi-attributes` | bold, italic, underline, reverse, dropped blink |
 | `ansi-attribute-reset` | 22, 23, 24 and 27 turning attributes back off |
 | `ansi-malformed-color` | truncated and invalid 38/48 selectors |
+| `ansi-reverse-order` | colour set before, after and across reverse |
+| `ansi-out-of-range` | palette indices and components above 255 |
 | `chafa-output` | genuine chafa truecolor half-block output |
 
 ## Tab expansion
