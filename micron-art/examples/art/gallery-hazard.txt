@@ -1,0 +1,6 @@
+--- SIGNAL ---
+- rssi   -78 dBm
+- snr     9.5 dB
+- path   3 hops
+`--------------`
+# uptime 14d
