@@ -65,3 +65,38 @@ jobs:
       # node's built-in runner rather than a test framework.
       - name: Fixture tests
         run: node --test tests/*.test.js
+
+  examples:
+    name: examples are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # The .mu files under examples/ are generated from examples/art/.
+      # Rebuilding them here is what keeps the showcase honest: if the
+      # converter changes and nobody regenerates, the example pages stop
+      # demonstrating what the converter actually does.
+      - name: Regenerate
+        run: ./examples/regenerate.sh
+
+      # Two checks, because they catch different things. git diff sees
+      # modified and deleted files; it does not see a newly created one,
+      # which would be untracked.
+      - name: Fail if the generated pages drifted
+        run: |
+          set -euo pipefail
+          if ! git diff --exit-code -- examples/; then
+            echo
+            echo "examples/ is out of date. Run ./examples/regenerate.sh and commit the result."
+            exit 1
+          fi
+          untracked=$(git status --porcelain --untracked-files=all -- examples/)
+          if [ -n "$untracked" ]; then
+            echo "regenerating produced files that are not committed:"
+            echo "$untracked"
+            exit 1
+          fi
