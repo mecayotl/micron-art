@@ -5,9 +5,7 @@ Micron markup, so it survives being served from a Reticulum node.
 
 **[Open the converter →](https://quetzal-root.github.io/micron-art/)**
 
-<!-- Screenshot: drop a PNG at docs/screenshot.png and uncomment the next line.
-![The micron-art converter](docs/screenshot.png)
--->
+![The converter with ASCII art loaded in literal mode, showing the art, the generated Micron and a preview of how it renders](docs/screenshot.png)
 
 Micron gives block meaning to the first character of a line. A dash draws
 a divider, a hash deletes the line, an angle bracket makes a heading — so
@@ -26,6 +24,12 @@ art, but Micron disables markup inside the block, so it is monochrome.
 
 **Escaped** protects each significant character in place, which leaves
 colour and formatting available. This is the mode that keeps ANSI colour.
+
+![ANSI art converted in escaped mode, with the preview showing the image rendered in colour](docs/screenshot-color.png)
+
+Above: `chafa` output pasted in, converted in escaped mode. The preview
+reads the generated markup back through a Micron reader, so it shows what
+NomadNet will render rather than a copy of the input.
 
 ## Quick start
 
