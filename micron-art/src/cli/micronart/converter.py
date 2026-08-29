@@ -23,8 +23,13 @@ LITERAL = "literal"
 ESCAPED = "escaped"
 MODES = (LITERAL, ESCAPED)
 
-# Emitted once at the end of a coloured document. Without it, colour
-# leaks into whatever follows the art on the page.
+# Closes any colour or attribute a line left open.
+#
+# The renderer wraps each line in an attribute built from the state at
+# the end of that line, then pads the row to the terminal width with it.
+# A background still set when the line ends therefore paints all the way
+# to the right edge, and an underline runs to the edge too. Bold and
+# italic do not show on blank padding, but are cleared by the same tag.
 RESET = "``"
 
 _ATTRIBUTE_TAGS = (("bold", "`!"), ("italic", "`*"), ("underline", "`_"))
@@ -55,6 +60,17 @@ def effective_colors(style, warnings, state):
     return style.bg, style.fg
 
 
+def _is_default(style):
+    """True when nothing is set that the renderer would paint or carry."""
+    return (
+        style.fg is None
+        and style.bg is None
+        and not style.bold
+        and not style.italic
+        and not style.underline
+    )
+
+
 def to_literal(parsed):
     """Render parsed cells as a literal block, dropping all colour."""
     if not parsed:
@@ -75,7 +91,6 @@ def to_escaped(parsed, warnings=None):
         return ""
 
     current = Style()
-    emitted_any = False
     out = []
     state = {"warned_reverse": False}
 
@@ -86,16 +101,13 @@ def to_escaped(parsed, warnings=None):
             if fg != current.fg:
                 buf.append("`f" if fg is None else "`F" + micron_color(fg))
                 current.fg = fg
-                emitted_any = True
             if bg != current.bg:
                 buf.append("`b" if bg is None else "`B" + micron_color(bg))
                 current.bg = bg
-                emitted_any = True
             for name, tag in _ATTRIBUTE_TAGS:
                 if getattr(style, name) != getattr(current, name):
                     buf.append(tag)
                     setattr(current, name, getattr(style, name))
-                    emitted_any = True
             # Escaping is applied per character rather than per line
             # because tags are interleaved with the text. A leading
             # colour tag would already protect a block character, but
@@ -105,12 +117,17 @@ def to_escaped(parsed, warnings=None):
             if index == 0 and char in BLOCK_CHARS:
                 text = "\\" + text
             buf.append(text)
+
+        # Close the line if it left anything set. Art whose source has no
+        # colour emits nothing here, so a colour tag applied by hand ahead
+        # of the block still carries across its lines.
+        if not _is_default(current):
+            buf.append(RESET)
+            current = Style()
+
         out.append("".join(buf))
 
-    document = "\n".join(out)
-    if emitted_any:
-        document += RESET
-    return document + "\n"
+    return "\n".join(out) + "\n"
 
 
 def convert(raw, mode):

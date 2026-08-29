@@ -53,9 +53,9 @@ Colour read from SGR escape sequences and mapped to Micron tags. Source
 was a .ans file; see micron-art/docs/ansi-mapping.md for what survives
 the conversion and what does not.
 
- `Ff00▄▄▄▄`Fff0▄▄▄▄`F0f0▄▄▄▄`F0ff▄▄▄▄`F55f▄▄▄▄`Ff0f▄▄▄▄
-`f `F21c▀`F31b▀`F32b▀`F42b▀`F42a▀`F52a▀`F639▀`F639▀`F738▀`F738▀`F848▀`F847▀`F947▀`F946▀`Fa46▀`Fa56▀`Fb55▀`Fb55▀`Fc54▀`Fc64▀`Fd64▀`Fd63▀`Fe63▀`Ff72▀
-`f `F0ffc`F0f0o`Fff0l`Ff00o`Ff0fu`F55fr`f from ANSI``
+ `Ff00▄▄▄▄`Fff0▄▄▄▄`F0f0▄▄▄▄`F0ff▄▄▄▄`F55f▄▄▄▄`Ff0f▄▄▄▄``
+ `F21c▀`F31b▀`F32b▀`F42b▀`F42a▀`F52a▀`F639▀`F639▀`F738▀`F738▀`F848▀`F847▀`F947▀`F946▀`Fa46▀`Fa56▀`Fb55▀`Fb55▀`Fc54▀`Fc64▀`Fd64▀`Fd63▀`Fe63▀`Ff72▀``
+ `F0ffc`F0f0o`Fff0l`Ff00o`Ff0fu`F55fr`f from ANSI
 
 >>Why converting matters
 

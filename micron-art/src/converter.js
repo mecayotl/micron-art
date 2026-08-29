@@ -22,9 +22,25 @@ export const LITERAL = "literal";
 export const ESCAPED = "escaped";
 export const MODES = [LITERAL, ESCAPED];
 
-// Emitted once at the end of a coloured document. Without it, colour
-// leaks into whatever follows the art on the page.
+// Closes any colour or attribute a line left open.
+//
+// The renderer wraps each line in an attribute built from the state at the
+// end of that line, then pads the row to the terminal width with it. A
+// background still set when the line ends therefore paints all the way to
+// the right edge, and an underline runs to the edge too. Bold and italic
+// do not show on blank padding, but are cleared by the same tag.
 export const RESET = "``";
+
+// True when nothing is set that the renderer would paint or carry.
+function isDefault(style) {
+  return (
+    style.fg === null &&
+    style.bg === null &&
+    !style.bold &&
+    !style.italic &&
+    !style.underline
+  );
+}
 
 const ATTRIBUTE_TAGS = [
   ["bold", "`!"],
@@ -76,8 +92,7 @@ export function toLiteral(parsed) {
 export function toEscaped(parsed, warnings) {
   if (parsed.length === 0) return "";
 
-  const current = newStyle();
-  let emittedAny = false;
+  let current = newStyle();
   const out = [];
   const state = { warnedReverse: false };
 
@@ -90,18 +105,15 @@ export function toEscaped(parsed, warnings) {
       if (!colorsEqual(fg, current.fg)) {
         buf.push(fg === null ? "`f" : "`F" + micronColor(fg));
         current.fg = fg;
-        emittedAny = true;
       }
       if (!colorsEqual(bg, current.bg)) {
         buf.push(bg === null ? "`b" : "`B" + micronColor(bg));
         current.bg = bg;
-        emittedAny = true;
       }
       for (const [name, tag] of ATTRIBUTE_TAGS) {
         if (style[name] !== current[name]) {
           buf.push(tag);
           current[name] = style[name];
-          emittedAny = true;
         }
       }
 
@@ -113,12 +125,19 @@ export function toEscaped(parsed, warnings) {
       if (index === 0 && BLOCK_CHARS.includes(char)) text = "\\" + text;
       buf.push(text);
     }
+
+    // Close the line if it left anything set. Art whose source has no
+    // colour emits nothing here, so a colour tag applied by hand ahead of
+    // the block still carries across its lines.
+    if (!isDefault(current)) {
+      buf.push(RESET);
+      current = newStyle();
+    }
+
     out.push(buf.join(""));
   }
 
-  let document = out.join("\n");
-  if (emittedAny) document += RESET;
-  return document + "\n";
+  return out.join("\n") + "\n";
 }
 
 // Convert art to Micron markup.

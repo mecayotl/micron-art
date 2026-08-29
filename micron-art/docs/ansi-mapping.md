@@ -48,9 +48,25 @@ Warnings are raised only for `2`, `5`, `6`, reverse video against a
 default colour, a malformed extended-colour sequence, and a colour value
 out of range. Everything else vanishes without comment.
 
-Tags are emitted only when the state changes, not per cell, and colour
-state carries across lines. A document that emitted any tag ends with a
-single `` `` `` reset.
+Tags are emitted only when the state changes, not per cell. **Every line
+that sets colour closes it with `` `` ``.**
+
+That closing tag is not tidiness. The renderer wraps each line in an
+attribute built from the state at the *end* of that line, then pads the
+row out to the terminal width using it. A background still set when the
+line ends is painted across the whole remaining width, so coloured art
+grows a bar of colour running to the right edge of the terminal. An
+underline does the same. Bold and italic do not show on blank padding,
+but the same tag clears them.
+
+Colour state does carry across lines in Micron — `` `Ff00RED `` followed
+by a plain line renders both red — which is exactly why the leak happens
+and why each line has to be closed. Re-emitting the colour at the start
+of the next line is the price of the art ending where it is drawn.
+
+Art with no colour of its own emits nothing here, so a colour tag applied
+by hand ahead of a converted block still carries across all of its lines.
+`examples/gallery.mu` relies on that.
 
 ## Turning attributes off
 

@@ -215,12 +215,20 @@ to xterm's defaults so both implementations agree:
 Tags are emitted **only when the colour changes**, not per cell — a
 per-cell encoding costs ten characters of markup per glyph.
 
-**Colour state persists across lines.** Verified: `` `Ff00RED `` followed
-by a plain line renders *both* lines red. State is therefore carried
-across the whole document and reset once at the end with `` `` ``. A
-per-line reset would be larger, not smaller, because the colour then has
-to be re-emitted at every line start. The trailing reset matters: without
-it, colour leaks into whatever follows the art on the page.
+**Every line that sets colour closes it with `` `` ``.** Colour state does
+carry across lines in Micron — verified: `` `Ff00RED `` followed by a
+plain line renders *both* lines red — but that is precisely the problem.
+The renderer wraps each line in an attribute taken from the state at the
+end of that line and pads the row to the terminal width with it, so a
+line ending with a background still set paints it all the way to the
+right edge. An underline does the same.
+
+Re-emitting the colour at the start of the next line costs a few
+characters and is the price of the art ending where it is drawn.
+
+Art with no colour of its own emits nothing here, so a colour tag applied
+by hand ahead of a converted block still carries across its lines —
+`examples/gallery.mu` depends on that.
 
 A line-leading colour tag incidentally protects a line-leading block
 character, since the line no longer begins with `-` `#` `>` `<`. The
