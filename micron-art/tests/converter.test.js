@@ -92,3 +92,76 @@ test("colours compare by value, not reference", () => {
 test("unknown mode is rejected", () => {
   assert.throws(() => convert("x", "colour"), /mode must be one of/);
 });
+
+// Deliberately an independent reader, not the converter's own state
+// machine: a test that shared that machinery would pass vacuously.
+//
+// The renderer wraps each line in an attribute taken from the state at the
+// end of that line and pads the row with it, so a line that ends with a
+// background still set paints it to the terminal edge.
+function stateAtEndOfEachLine(markup) {
+  const states = [];
+  let fg = null;
+  let bg = null;
+  let bold = false;
+  let italic = false;
+  let underline = false;
+  for (const line of markup.split("\n")) {
+    const chars = [...line];
+    let escape = false;
+    let i = 0;
+    if (chars[0] === "\\") {
+      escape = true;
+      i = 1;
+    }
+    for (; i < chars.length; i += 1) {
+      const c = chars[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (c === "\\") {
+        escape = true;
+      } else if (c === "`") {
+        const tag = chars[i + 1];
+        i += 1;
+        if (tag === "F") {
+          fg = chars.slice(i + 1, i + 4).join("");
+          i += 3;
+        } else if (tag === "B") {
+          bg = chars.slice(i + 1, i + 4).join("");
+          i += 3;
+        } else if (tag === "f") fg = null;
+        else if (tag === "b") bg = null;
+        else if (tag === "!") bold = !bold;
+        else if (tag === "*") italic = !italic;
+        else if (tag === "_") underline = !underline;
+        else if (tag === "`") {
+          fg = null;
+          bg = null;
+          bold = false;
+          italic = false;
+          underline = false;
+        }
+      }
+    }
+    states.push({ fg, bg, bold, italic, underline });
+  }
+  return states;
+}
+
+test("no line of escaped output leaves colour or attributes open", () => {
+  for (const name of fixtureNames()) {
+    const stem = stemOf(name);
+    const { markup } = convert(read(join(FIXTURES, "input", name)), "escaped");
+    if (markup === "") continue;
+    const states = stateAtEndOfEachLine(markup.replace(/\n$/, ""));
+    states.forEach((s, index) => {
+      assert.deepEqual(
+        s,
+        { fg: null, bg: null, bold: false, italic: false, underline: false },
+        `${stem} line ${index} would paint its background to the terminal edge`,
+      );
+    });
+  }
+});

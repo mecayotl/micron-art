@@ -93,6 +93,69 @@ def test_unknown_mode_rejected():
     raise AssertionError("expected ValueError for an unknown mode")
 
 
+def state_at_end_of_each_line(markup):
+    """Deliberately an independent reader, not the converter's own state
+    machine: a test that shared that machinery would pass vacuously.
+
+    The renderer wraps each line in an attribute taken from the state at
+    the end of that line and pads the row with it, so a line that ends
+    with a background still set paints it to the terminal edge.
+    """
+    states = []
+    fg = bg = None
+    bold = italic = underline = False
+    for line in markup.split("\n"):
+        chars = list(line)
+        escape = False
+        i = 0
+        if chars[:1] == ["\\"]:
+            escape = True
+            i = 1
+        while i < len(chars):
+            c = chars[i]
+            if escape:
+                escape = False
+            elif c == "\\":
+                escape = True
+            elif c == "`":
+                tag = chars[i + 1] if i + 1 < len(chars) else ""
+                i += 1
+                if tag == "F":
+                    fg = "".join(chars[i + 1:i + 4])
+                    i += 3
+                elif tag == "B":
+                    bg = "".join(chars[i + 1:i + 4])
+                    i += 3
+                elif tag == "f":
+                    fg = None
+                elif tag == "b":
+                    bg = None
+                elif tag == "!":
+                    bold = not bold
+                elif tag == "*":
+                    italic = not italic
+                elif tag == "_":
+                    underline = not underline
+                elif tag == "`":
+                    fg = bg = None
+                    bold = italic = underline = False
+            i += 1
+        states.append((fg, bg, bold, italic, underline))
+    return states
+
+
+def test_no_line_leaves_colour_open():
+    for name in fixture_names():
+        markup, _ = convert(read(os.path.join(FIXTURES, "input", name)), "escaped")
+        if markup == "":
+            continue
+        for index, state in enumerate(state_at_end_of_each_line(markup.rstrip("\n"))):
+            assert state == (None, None, False, False, False), (
+                "%s line %d would paint its background to the terminal edge"
+                % (name, index)
+            )
+
+
 def main():
     failures = []
     tests = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
