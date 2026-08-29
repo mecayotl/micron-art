@@ -109,6 +109,8 @@ and `.ans` for ANSI/SGR art.
 | `ansi-256color` | SGR 38;5;N — cube, greyscale ramp and base 16 |
 | `ansi-truecolor` | SGR 38;2;R;G;B, foreground and background |
 | `ansi-attributes` | bold, italic, underline, reverse, dropped blink |
+| `ansi-attribute-reset` | 22, 23, 24 and 27 turning attributes back off |
+| `ansi-malformed-color` | truncated and invalid 38/48 selectors |
 | `chafa-output` | genuine chafa truecolor half-block output |
 
 ## Tab expansion
