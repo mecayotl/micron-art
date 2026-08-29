@@ -1,5 +1,14 @@
+# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
+.venv/
+venv/
+
+# Build output. dist/ is generated -- never edit it directly.
 build/
 dist/
+
+# Editors and platforms
+.DS_Store
+*.swp

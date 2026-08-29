@@ -4,7 +4,7 @@ Getting `.mu` output onto a real node and confirming it renders before
 you announce it.
 
 **Provenance.** Everything below marked as fact was read out of the
-installed NomadNet source (version 0.6.4, `nomadnet/Node.py`,
+installed NomadNet source (version 0.9.8, `nomadnet/Node.py`,
 `nomadnet/NomadNetworkApp.py`, `nomadnet/ui/textui/Browser.py`) and is
 cited by file and line. Nothing here is from memory. Points that need
 checking on a **running** node are marked **TODO** — see the end of this
