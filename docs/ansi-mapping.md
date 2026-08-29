@@ -1,19 +1,16 @@
 # ANSI to Micron mapping
 
-What `src/ansi.js` and `cli/micronart/ansi.py` actually do with SGR
-escape sequences. This documents the code as written, not an intended
-design — where the behaviour is surprising, it is described as it is and
-marked, not tidied up.
+How `src/ansi.js` and `cli/micronart/ansi.py` handle SGR
+escape sequences. 
 
 The two implementations were compared across 694 SGR cases, including
 every one of the 256 palette indices in both foreground and background,
 malformed sequences, attribute toggles in both directions, and
-multi-line colour carry-over. They agree on all of them, in both markup
-and warnings.
+multi-line color carry-over. 
 
-Colour only survives in **escaped** mode. Literal mode disables Micron
+Color only survives in **escaped** mode. Literal mode disables Micron
 markup entirely, so every SGR sequence is stripped and only the glyphs
-remain. That is not a degraded colour path; it is a different output.
+remain. 
 
 ## What is recognized
 
