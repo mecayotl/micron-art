@@ -10,7 +10,7 @@ generated output is lost the next time anyone regenerates.
 
 From anywhere:
 
-    micron-art/examples/regenerate.sh
+    examples/regenerate.sh
 
 That rebuilds both `.mu` files from this directory in one command. Run it
 after any change to the converter — the committed `.mu` files must match

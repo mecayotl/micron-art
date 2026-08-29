@@ -10,10 +10,6 @@ on:
 permissions:
   contents: read
 
-defaults:
-  run:
-    working-directory: micron-art
-
 jobs:
   python:
     name: python ${{ matrix.python-version }}
@@ -37,7 +33,7 @@ jobs:
       # tests/test_converter.py covers the library. This covers argument
       # handling and the stdout/stderr split, which it does not.
       - name: CLI smoke test
-        working-directory: micron-art/src/cli
+        working-directory: src/cli
         run: |
           set -euo pipefail
           # Tabs expand to stop 4, wrapped in a literal block. Newlines

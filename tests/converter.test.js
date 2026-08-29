@@ -3,7 +3,7 @@
 // The fixtures are the source of truth. Never edit an expected file to
 // make a test pass; see tests/fixtures/README.md.
 //
-// Run with `node --test tests/` from micron-art/.
+// Run with `node --test tests/` from .
 
 import { strict as assert } from "node:assert";
 import { readFileSync, readdirSync } from "node:fs";
