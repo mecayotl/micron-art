@@ -167,8 +167,20 @@ looks like.
 
 **2. Check the width.** Art wider than the viewer's terminal wraps and
 the shape is destroyed. Content inside a section is indented two columns
-per depth level, so a page with headings has less room than the raw
+per depth level, so art under a heading has less room than the raw
 terminal width suggests.
+
+Width is measured in **columns, not characters** — box-drawing glyphs are
+one column each, CJK glyphs are two. `chafa --size` is the easiest way
+to bring a conversion down to a target width.
+
+**A client can make a correct page look broken.** Wrapping happens in the
+viewer, not in the markup, so the same `.mu` file renders cleanly in one
+client and sheared in another that is narrower, indents differently, or
+themes differently. Before concluding the conversion is wrong, open the
+page on the node itself. A conversion that is byte-identical to its
+source art at the art's own width is correct however it happens to look
+in a particular window.
 
 **3. Open it in the browser.** Run NomadNet and navigate to your own
 node's `/page/index.mu`.
