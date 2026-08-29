@@ -32,6 +32,32 @@ const ATTRIBUTE_TAGS = [
   ["underline", "`_"],
 ];
 
+export const REVERSE_UNREPRESENTABLE =
+  "reverse video with a default colour: dropped";
+
+// Resolve a cell's colours, applying reverse video at emission.
+//
+// Reverse is a rendering attribute in a terminal: the colours keep the
+// slots they were named for and are swapped when drawn. Resolving it here
+// rather than when the code is read means a colour set while reverse is
+// active lands where a terminal would put it.
+//
+// Micron has no reverse attribute, so the swap has to be written out as
+// concrete colours. That is only possible when both sides are set --
+// swapping against a default would need the document's default colour as
+// an explicit value, which is theme-dependent and not knowable here.
+export function effectiveColors(style, warnings, state) {
+  if (!style.reverse) return [style.fg, style.bg];
+  if (style.fg === null || style.bg === null) {
+    if (warnings && !state.warnedReverse) {
+      warnings.push(REVERSE_UNREPRESENTABLE);
+      state.warnedReverse = true;
+    }
+    return [style.fg, style.bg];
+  }
+  return [style.bg, style.fg];
+}
+
 // Render parsed cells as a literal block, dropping all colour.
 export function toLiteral(parsed) {
   if (parsed.length === 0) return "";
@@ -47,26 +73,28 @@ export function toLiteral(parsed) {
 // encoding costs ten characters of markup per glyph. State is carried
 // across lines because the parser carries it too, so a per-line reset
 // would be larger, not smaller.
-export function toEscaped(parsed) {
+export function toEscaped(parsed, warnings) {
   if (parsed.length === 0) return "";
 
   const current = newStyle();
   let emittedAny = false;
   const out = [];
+  const state = { warnedReverse: false };
 
   for (const cells of parsed) {
     const buf = [];
     for (let index = 0; index < cells.length; index += 1) {
       const { style, char } = cells[index];
+      const [fg, bg] = effectiveColors(style, warnings, state);
 
-      if (!colorsEqual(style.fg, current.fg)) {
-        buf.push(style.fg === null ? "`f" : "`F" + micronColor(style.fg));
-        current.fg = style.fg;
+      if (!colorsEqual(fg, current.fg)) {
+        buf.push(fg === null ? "`f" : "`F" + micronColor(fg));
+        current.fg = fg;
         emittedAny = true;
       }
-      if (!colorsEqual(style.bg, current.bg)) {
-        buf.push(style.bg === null ? "`b" : "`B" + micronColor(style.bg));
-        current.bg = style.bg;
+      if (!colorsEqual(bg, current.bg)) {
+        buf.push(bg === null ? "`b" : "`B" + micronColor(bg));
+        current.bg = bg;
         emittedAny = true;
       }
       for (const [name, tag] of ATTRIBUTE_TAGS) {
@@ -102,6 +130,9 @@ export function convert(raw, mode) {
     throw new Error("mode must be one of " + MODES.join(", "));
   }
   const { parsed, warnings } = parseLines(splitLines(normalizeText(raw)));
-  const markup = mode === LITERAL ? toLiteral(parsed) : toEscaped(parsed);
+  // Literal mode drops all colour, so reverse cannot fail to be
+  // representable and raises nothing.
+  const markup =
+    mode === LITERAL ? toLiteral(parsed) : toEscaped(parsed, warnings);
   return { markup, warnings };
 }

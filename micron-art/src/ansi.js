@@ -18,9 +18,10 @@ export const SGR_PATTERN = /\x1b\[([0-9;]*)m/g;
 
 // Graphic state for one cell. A null colour means the document default.
 export function newStyle() {
-  // `reverse` is bookkeeping only. Reverse video is applied by swapping
-  // the colours as soon as it is seen, so nothing downstream reads it; it
-  // exists so that SGR 27 knows whether there is a swap to undo.
+  // `reverse` is recorded, not applied. The colours keep the slots they
+  // were named for and the swap happens at emission, so a colour set
+  // while reverse is active lands where a terminal would put it. See
+  // effectiveColors in converter.js.
   return {
     fg: null,
     bg: null,
@@ -73,19 +74,7 @@ export function applySgr(style, params, warnings) {
     } else if (code === 4) {
       style.underline = true;
     } else if (code === 7) {
-      // Micron has no reverse-video attribute, so it is applied by
-      // swapping. With a default on either side there is nothing
-      // concrete to swap to.
-      if (style.reverse) {
-        // already reversed; 7 is idempotent
-      } else if (style.fg === null || style.bg === null) {
-        warnings.push("reverse video with a default colour: dropped");
-      } else {
-        const swap = style.fg;
-        style.fg = style.bg;
-        style.bg = swap;
-        style.reverse = true;
-      }
+      style.reverse = true;
     } else if (code === 22) {
       // Normal intensity. Also clears faint, which is not tracked.
       style.bold = false;
@@ -94,12 +83,7 @@ export function applySgr(style, params, warnings) {
     } else if (code === 24) {
       style.underline = false;
     } else if (code === 27) {
-      if (style.reverse) {
-        const swap = style.fg;
-        style.fg = style.bg;
-        style.bg = swap;
-        style.reverse = false;
-      }
+      style.reverse = false;
     } else if (code === 2) {
       warnings.push("faint: no Micron equivalent, dropped");
     } else if (code === 5 || code === 6) {
@@ -120,10 +104,20 @@ export function applySgr(style, params, warnings) {
       const isForeground = code === 38;
       let color;
       if (i + 1 < codes.length && codes[i + 1] === 5 && i + 2 < codes.length) {
-        color = xterm256(codes[i + 2]);
+        const index = codes[i + 2];
+        if (!(index >= 0 && index <= 255)) {
+          warnings.push(`colour index ${index} out of range: remainder ignored`);
+          break;
+        }
+        color = xterm256(index);
         i += 2;
       } else if (i + 1 < codes.length && codes[i + 1] === 2 && i + 4 < codes.length) {
-        color = [codes[i + 2], codes[i + 3], codes[i + 4]];
+        const rgb = [codes[i + 2], codes[i + 3], codes[i + 4]];
+        if (!rgb.every((value) => value >= 0 && value <= 255)) {
+          warnings.push("colour component out of range: remainder ignored");
+          break;
+        }
+        color = rgb;
         i += 4;
       } else {
         // The selector is missing or unparseable. Abandon the rest of the

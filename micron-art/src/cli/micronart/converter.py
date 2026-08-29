@@ -29,6 +29,31 @@ RESET = "``"
 
 _ATTRIBUTE_TAGS = (("bold", "`!"), ("italic", "`*"), ("underline", "`_"))
 
+REVERSE_UNREPRESENTABLE = "reverse video with a default colour: dropped"
+
+
+def effective_colors(style, warnings, state):
+    """Resolve a cell's colours, applying reverse video at emission.
+
+    Reverse is a rendering attribute in a terminal: the colours keep the
+    slots they were named for and are swapped when drawn. Resolving it
+    here rather than when the code is read means a colour set while
+    reverse is active lands where a terminal would put it.
+
+    Micron has no reverse attribute, so the swap has to be written out as
+    concrete colours. That is only possible when both sides are set --
+    swapping against a default would need the document's default colour
+    as an explicit value, which is theme-dependent and not knowable here.
+    """
+    if not style.reverse:
+        return style.fg, style.bg
+    if style.fg is None or style.bg is None:
+        if warnings is not None and not state["warned_reverse"]:
+            warnings.append(REVERSE_UNREPRESENTABLE)
+            state["warned_reverse"] = True
+        return style.fg, style.bg
+    return style.bg, style.fg
+
 
 def to_literal(parsed):
     """Render parsed cells as a literal block, dropping all colour."""
@@ -38,7 +63,7 @@ def to_literal(parsed):
     return LITERAL_TOGGLE + "\n" + "\n".join(body) + "\n" + LITERAL_TOGGLE + "\n"
 
 
-def to_escaped(parsed):
+def to_escaped(parsed, warnings=None):
     """Render parsed cells with escaping and Micron colour tags.
 
     Tags are emitted only when the state changes, not per cell: a
@@ -52,17 +77,19 @@ def to_escaped(parsed):
     current = Style()
     emitted_any = False
     out = []
+    state = {"warned_reverse": False}
 
     for cells in parsed:
         buf = []
         for index, (style, char) in enumerate(cells):
-            if style.fg != current.fg:
-                buf.append("`f" if style.fg is None else "`F" + micron_color(style.fg))
-                current.fg = style.fg
+            fg, bg = effective_colors(style, warnings, state)
+            if fg != current.fg:
+                buf.append("`f" if fg is None else "`F" + micron_color(fg))
+                current.fg = fg
                 emitted_any = True
-            if style.bg != current.bg:
-                buf.append("`b" if style.bg is None else "`B" + micron_color(style.bg))
-                current.bg = style.bg
+            if bg != current.bg:
+                buf.append("`b" if bg is None else "`B" + micron_color(bg))
+                current.bg = bg
                 emitted_any = True
             for name, tag in _ATTRIBUTE_TAGS:
                 if getattr(style, name) != getattr(current, name):
@@ -95,5 +122,10 @@ def convert(raw, mode):
     if mode not in MODES:
         raise ValueError("mode must be one of %s" % (", ".join(MODES),))
     parsed, warnings = parse_lines(split_lines(normalize_text(raw)))
-    markup = to_literal(parsed) if mode == LITERAL else to_escaped(parsed)
+    if mode == LITERAL:
+        # Literal mode drops all colour, so reverse cannot fail to be
+        # representable and raises nothing.
+        markup = to_literal(parsed)
+    else:
+        markup = to_escaped(parsed, warnings)
     return markup, warnings
