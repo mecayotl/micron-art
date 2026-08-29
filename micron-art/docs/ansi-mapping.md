@@ -5,10 +5,11 @@ escape sequences. This documents the code as written, not an intended
 design — where the behaviour is surprising, it is described as it is and
 marked, not tidied up.
 
-The two implementations were compared across 669 SGR cases, including
+The two implementations were compared across 694 SGR cases, including
 every one of the 256 palette indices in both foreground and background,
-malformed sequences, and multi-line colour carry-over. They agree on all
-of them, in both markup and warnings.
+malformed sequences, attribute toggles in both directions, and
+multi-line colour carry-over. They agree on all of them, in both markup
+and warnings.
 
 Colour only survives in **escaped** mode. Literal mode disables Micron
 markup entirely, so every SGR sequence is stripped and only the glyphs
@@ -25,6 +26,10 @@ remain. That is not a degraded colour path; it is a different output.
 | `4` | underline | `` `_ `` |
 | `5`, `6` | blink | dropped, **with a warning** |
 | `7` | reverse video | swaps foreground and background |
+| `22` | normal intensity | clears bold |
+| `23` | italic off | clears italic |
+| `24` | underline off | clears underline |
+| `27` | reverse off | swaps the colours back |
 | `30`–`37` | foreground, base 8 | `` `F `` + table below |
 | `38;5;N` | foreground, 256-colour | `` `F `` + cube/grey rules |
 | `38;2;R;G;B` | foreground, 24-bit | `` `F `` + quantization |
@@ -37,50 +42,62 @@ remain. That is not a degraded colour path; it is a different output.
 
 **Everything else is dropped silently** — no warning, no trace in the
 output. That includes `8` (conceal), `9` (strikethrough), `21`, `53`
-(overline), and any code with no meaning at all. Only `2`, `5`, `6` and
-one case of `7` warn; the rest vanish.
+(overline), and any code with no meaning at all.
+
+Warnings are raised only for `2`, `5`, `6`, reverse video against a
+default colour, and a malformed extended-colour sequence. Everything
+else vanishes without comment.
 
 Tags are emitted only when the state changes, not per cell, and colour
 state carries across lines. A document that emitted any tag ends with a
 single `` `` `` reset.
 
-## Two behaviours that will surprise you
+## Turning attributes off
 
-### Attribute off-codes are not implemented
+Micron's attribute tags are toggles, so clearing an attribute emits the
+same tag a second time:
 
-`22` (bold off), `23` (italic off), `24` (underline off) and `27`
-(reverse off) fall into the silently-dropped bucket. The attribute
-**stays on**:
+    ESC[1;3;4m X ESC[22m Y   ->   `!`*`_X`!Y``
 
-    ESC[1;3;4m X ESC[22m Y   ->   `!`*`_XY``
+`X` is bold, italic and underlined; `Y` keeps the italic and underline
+but not the bold.
 
-Both `X` and `Y` are bold, italic and underlined. The only ways to turn
-an attribute off are `0`, or the end-of-document reset.
+`27` undoes the colour swap that `7` applied:
 
-This rarely bites with generated art — chafa never emits `22` — but
-hand-written ANSI or terminal captures may, and the result is formatting
-that bleeds to the end of the document.
+    ESC[31;42;7m X ESC[27m Y  ->  `F0c0`Bc00X`Fc00`B0c0Y``
 
-### A malformed 38/48 sequence has its remainder reinterpreted
+`22` corresponds to ECMA-48 "normal intensity", which also clears faint.
+Faint is not tracked here, so that part is a no-op.
 
-When `38` or `48` is not followed by a well-formed selector, the parser
-does not abort the sequence. It advances one parameter and carries on,
-so **the leftover parameters are read as ordinary SGR codes**:
+`7` is idempotent — a second `7` with a swap already applied does
+nothing, rather than swapping back. Use `27` for that. A `27` with no
+swap outstanding is likewise a no-op.
 
-| Input | Codes seen | Result |
-|---|---|---|
-| `ESC[38;5m` | `38`, then `5` | blink warning, no colour |
-| `ESC[38;2;1;2m` | `38`, then `2`, `1`, `2` | faint warning, **and bold applied** |
-| `ESC[38;9;1m` | `38`, then `9`, `1` | bold applied |
-| `ESC[1;;2m` | `1`, `0`, `2` | empty field reads as `0`, resetting the bold |
+Reverse video is applied by **swapping the two colours immediately**,
+not by carrying a reverse flag through to rendering. The two differ if a
+colour is set *after* the swap: here the new colour lands in the slot it
+names, whereas a terminal would swap at draw time. Art that sets a
+colour while reverse is active is the case to watch.
 
-So a truncated 256-colour sequence produces a *blink* warning, and a
-truncated truecolour sequence can turn text bold. The warnings are real
-warnings about codes that really were parsed; they just came from the
-wreckage of a colour sequence rather than from the author's intent.
+## Malformed extended-colour sequences
 
-Empty parameter lists and empty fields both read as `0`: `ESC[m` is a
-full reset.
+When `38` or `48` is not followed by a well-formed selector, the rest of
+the sequence is **abandoned** and a warning is raised. Nothing is
+applied:
+
+| Input | Result |
+|---|---|
+| `ESC[38;5m` | no colour, malformed warning |
+| `ESC[38;2;1;2m` | no colour, malformed warning |
+| `ESC[38;9;1m` | no colour, malformed warning |
+
+Only the remainder of that one sequence is discarded. A later, separate
+sequence is unaffected — `ESC[38;5mBAD` `ESC[32mGOOD` leaves `BAD`
+uncoloured and `GOOD` green.
+
+Empty parameter lists and empty fields read as `0`, which is what
+ECMA-48 specifies: `ESC[m` is a full reset, and `ESC[1;;2m` is
+`1`, `0`, `2` — the empty field resets the bold that preceded it.
 
 ## The 16 standard colours
 

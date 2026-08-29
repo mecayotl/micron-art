@@ -23,17 +23,23 @@ SGR_PATTERN = re.compile(r"\x1b\[([0-9;]*)m")
 class Style:
     """Graphic state for one cell. None means the document default."""
 
-    __slots__ = ("fg", "bg", "bold", "italic", "underline")
+    __slots__ = ("fg", "bg", "bold", "italic", "underline", "reverse")
 
-    def __init__(self, fg=None, bg=None, bold=False, italic=False, underline=False):
+    def __init__(self, fg=None, bg=None, bold=False, italic=False,
+                 underline=False, reverse=False):
         self.fg = fg
         self.bg = bg
         self.bold = bold
         self.italic = italic
         self.underline = underline
+        # Bookkeeping only. Reverse is applied by swapping the colours as
+        # soon as it is seen, so nothing downstream reads this; it exists
+        # so that SGR 27 knows whether there is a swap to undo.
+        self.reverse = reverse
 
     def copy(self):
-        return Style(self.fg, self.bg, self.bold, self.italic, self.underline)
+        return Style(self.fg, self.bg, self.bold, self.italic,
+                     self.underline, self.reverse)
 
     def reset(self):
         self.fg = None
@@ -41,6 +47,7 @@ class Style:
         self.bold = False
         self.italic = False
         self.underline = False
+        self.reverse = False
 
 
 def apply_sgr(style, params, warnings):
@@ -61,10 +68,24 @@ def apply_sgr(style, params, warnings):
             # Micron has no reverse-video attribute, so it is applied by
             # swapping. With a default on either side there is nothing
             # concrete to swap to.
-            if style.fg is None or style.bg is None:
+            if style.reverse:
+                pass  # already reversed; 7 is idempotent
+            elif style.fg is None or style.bg is None:
                 warnings.append("reverse video with a default colour: dropped")
             else:
                 style.fg, style.bg = style.bg, style.fg
+                style.reverse = True
+        elif code == 22:
+            # Normal intensity. Also clears faint, which is not tracked.
+            style.bold = False
+        elif code == 23:
+            style.italic = False
+        elif code == 24:
+            style.underline = False
+        elif code == 27:
+            if style.reverse:
+                style.fg, style.bg = style.bg, style.fg
+                style.reverse = False
         elif code == 2:
             warnings.append("faint: no Micron equivalent, dropped")
         elif code in (5, 6):
@@ -90,8 +111,14 @@ def apply_sgr(style, params, warnings):
                 color = (codes[i + 2], codes[i + 3], codes[i + 4])
                 i += 4
             else:
-                i += 1
-                continue
+                # The selector is missing or unparseable. Abandon the rest
+                # of the sequence rather than reading its leftovers as
+                # further SGR codes, which would apply attributes nobody
+                # asked for.
+                warnings.append(
+                    "malformed extended colour sequence: remainder ignored"
+                )
+                break
             if is_fg:
                 style.fg = color
             else:

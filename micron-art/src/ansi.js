@@ -18,7 +18,17 @@ export const SGR_PATTERN = /\x1b\[([0-9;]*)m/g;
 
 // Graphic state for one cell. A null colour means the document default.
 export function newStyle() {
-  return { fg: null, bg: null, bold: false, italic: false, underline: false };
+  // `reverse` is bookkeeping only. Reverse video is applied by swapping
+  // the colours as soon as it is seen, so nothing downstream reads it; it
+  // exists so that SGR 27 knows whether there is a swap to undo.
+  return {
+    fg: null,
+    bg: null,
+    bold: false,
+    italic: false,
+    underline: false,
+    reverse: false,
+  };
 }
 
 export function copyStyle(style) {
@@ -28,6 +38,7 @@ export function copyStyle(style) {
     bold: style.bold,
     italic: style.italic,
     underline: style.underline,
+    reverse: style.reverse,
   };
 }
 
@@ -37,6 +48,7 @@ export function resetStyle(style) {
   style.bold = false;
   style.italic = false;
   style.underline = false;
+  style.reverse = false;
 }
 
 // Apply one SGR sequence's parameters to `style`, in place.
@@ -64,12 +76,29 @@ export function applySgr(style, params, warnings) {
       // Micron has no reverse-video attribute, so it is applied by
       // swapping. With a default on either side there is nothing
       // concrete to swap to.
-      if (style.fg === null || style.bg === null) {
+      if (style.reverse) {
+        // already reversed; 7 is idempotent
+      } else if (style.fg === null || style.bg === null) {
         warnings.push("reverse video with a default colour: dropped");
       } else {
         const swap = style.fg;
         style.fg = style.bg;
         style.bg = swap;
+        style.reverse = true;
+      }
+    } else if (code === 22) {
+      // Normal intensity. Also clears faint, which is not tracked.
+      style.bold = false;
+    } else if (code === 23) {
+      style.italic = false;
+    } else if (code === 24) {
+      style.underline = false;
+    } else if (code === 27) {
+      if (style.reverse) {
+        const swap = style.fg;
+        style.fg = style.bg;
+        style.bg = swap;
+        style.reverse = false;
       }
     } else if (code === 2) {
       warnings.push("faint: no Micron equivalent, dropped");
@@ -97,8 +126,11 @@ export function applySgr(style, params, warnings) {
         color = [codes[i + 2], codes[i + 3], codes[i + 4]];
         i += 4;
       } else {
-        i += 1;
-        continue;
+        // The selector is missing or unparseable. Abandon the rest of the
+        // sequence rather than reading its leftovers as further SGR
+        // codes, which would apply attributes nobody asked for.
+        warnings.push("malformed extended colour sequence: remainder ignored");
+        break;
       }
       if (isForeground) style.fg = color;
       else style.bg = color;
