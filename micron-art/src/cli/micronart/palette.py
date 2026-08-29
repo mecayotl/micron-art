@@ -2,7 +2,8 @@
 
 Micron colour is three hex nibbles. The NomadNet parser reads exactly
 three characters after `F`/`B` and no more, so `Fff0000 sets colour ff0
-and then renders the literal text 0000. Every source colour is therefore
+and then renders the literal text 000 -- the tag eats five of the eight
+characters. Every source colour is therefore
 quantized to 4 bits per channel.
 
 Mirrors src/palette.js. See tests/fixtures/README.md.
