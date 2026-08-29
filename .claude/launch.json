@@ -4,7 +4,7 @@
     {
       "name": "micron-art",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8000", "--directory", "micron-art"],
+      "runtimeArgs": ["-m", "http.server", "8000"],
       "port": 8000
     }
   ]
