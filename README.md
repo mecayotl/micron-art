@@ -65,8 +65,7 @@ Run the tests:
     node --test tests/*.test.js     # 114 tests
     python3 tests/test_converter.py # 56 tests
 
-No test runners or dependencies. Both tests read 
-`tests/fixtures/`.
+Both tests read `tests/fixtures/`.
 
 After changing the converter, rebuild the example pages and check nothing
 moved:
