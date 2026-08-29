@@ -7,8 +7,10 @@ you announce it.
 installed NomadNet source (version 0.9.8, `nomadnet/Node.py`,
 `nomadnet/NomadNetworkApp.py`, `nomadnet/ui/textui/Browser.py`) and is
 cited by file and line. Nothing here is from memory. Points that need
-checking on a **running** node are marked **TODO** — see the end of this
-document for the list.
+checking were resolved by driving NomadNet's own code paths directly —
+its real `serve_page` and `register_pages`, with the network stubbed out
+— rather than by running a node on a live mesh. Where that distinction
+matters, it is stated.
 
 ## Where pages live
 
@@ -73,8 +75,13 @@ To avoid that, set a refresh interval in minutes:
     file_refresh_interval = 5
 
 Note the comment in the source at `Node.py:55`: pages that have been
-removed are not deregistered on rescan. A deleted page may keep serving
-until restart.
+removed are not deregistered on rescan. The stale handler stays
+registered, but requests to it fail rather than serving old content —
+the file is gone, so `serve_page` returns nothing. See "Verified
+behaviour" below.
+
+This applies to remote requests only. Browsing your own node reads the
+filesystem directly, so your own changes appear without a restart.
 
 ## Static versus executable pages
 
@@ -129,6 +136,12 @@ dynamic allowlist.
 
 No `.allowed` file means the page is public.
 
+A hash of the wrong length is skipped silently, so a file of nothing but
+mistyped hashes is an empty allowlist and denies everyone. Lines must be
+exactly 32 hex characters. Note also that this is applied on the
+remote-serving path only — browsing the page on your own node bypasses
+it.
+
 ## Linking between pages
 
 Micron link syntax is a backtick, then the label and URL in brackets,
@@ -182,39 +195,104 @@ page on the node itself. A conversion that is byte-identical to its
 source art at the art's own width is correct however it happens to look
 in a particular window.
 
-**3. Open it in the browser.** Run NomadNet and navigate to your own
-node's `/page/index.mu`.
+**3. Open it in the browser.** Run NomadNet and browse your own node.
 
-**TODO — the exact local-browsing steps are not verified.** I can see
-that `Browser.DEFAULT_PATH` is `/page/index.mu` and that an empty
-destination resolves to the current node, but I have not confirmed the
-keystrokes or whether a node can browse itself without an announce
-having propagated. Fill this in from a running install.
+This is worth understanding, because it is **not a network request**.
+When the browser's destination matches its own node, it reads the page
+**straight off the filesystem** and skips Reticulum entirely
+(`Browser.py:1064-1090`; the loopback hash is set at
+`Network.py:1621`). The executable bit is honoured locally too.
 
-## What still needs checking on a live node
+Two consequences, both useful:
 
-None of these could be settled by reading source alone:
+- **A new or edited page shows immediately.** The loopback path never
+  consults the registered handlers, so no restart is needed to see your
+  own changes.
+- **It does not prove the page is reachable by anyone else.** Local
+  browsing succeeds for a page that was never registered, and it does
+  **not** apply `.allowed` — access control lives on the remote-serving
+  path only. A page can look perfect locally and be unreachable, or
+  unexpectedly public, remotely.
 
-1. **Browsing your own node locally.** Does a node serve itself, and
-   what is the exact navigation? If self-browsing does not work, what is
-   the minimum second endpoint needed to test?
-2. **Whether an announce is required** before a page is reachable, or
-   only for discovery by others.
-3. **Config directory in practice.** The resolution order above is from
-   source; confirm which directory your install actually chose. `ls -d
-   ~/.nomadnetwork ~/.config/nomadnetwork` settles it in one command.
-4. **Restart behaviour.** Confirm that adding a page with
-   `page_refresh_interval = 0` really does need a restart, and that a
-   non-zero interval picks pages up without one.
-5. **Deleted pages.** The source comment says removed pages are not
-   deregistered. Confirm whether a deleted page keeps serving until
-   restart, and note it here if so.
-6. **Executable pages end to end.** Confirm the executable bit alone is
-   sufficient, and that a script writing Micron to stdout is rendered
-   rather than shown as text.
-7. **`.allowed` files.** Confirm the hash format expected — the source
-   reads fixed-length hex and skips anything else, so a wrong length
-   fails silently rather than erroring.
+For anyone else to reach the node, Reticulum needs a path to it:
+`RNS.Transport.has_path()` must be true, and the browser calls
+`request_path()` and waits if it is not (`Browser.py:814`). Paths come
+from announces propagating, so an announce is what makes the node
+reachable by others — not what makes the page work.
 
-Items 3 to 5 are quick. Items 1, 2, 6 and 7 need a second node or a
-second identity to be meaningful.
+## Verified behaviour
+
+These were open questions in the first draft of this document. Each was
+settled by exercising the real code with the network stubbed out.
+
+**Config directory.** This install resolved to `~/.nomadnetwork`, which
+holds a `config` file and a populated `storage/` including `pages`.
+Neither `/etc/nomadnetwork` nor `~/.config/nomadnetwork` exists here, so
+the third branch of the resolution order applied.
+
+**A page added after startup is not served remotely until pages are
+registered again.** Confirmed by driving `register_pages` directly:
+after startup the handlers were `/page/index.mu` and `/page/one.mu`;
+adding `two.mu` left them unchanged; running `register_pages` again
+picked it up. With `page_refresh_interval` at its default of `0` there
+is no rescan, so that means a restart. Local loopback browsing is
+unaffected, as above.
+
+**A deleted page stops working, it does not keep serving.** The handler
+is never deregistered — the source says as much — but the file is gone,
+so the request raises and `serve_page` returns `None`. Confirmed: the
+same path returned its content before deletion and `None` after. An
+earlier draft of this document suggested it might keep serving stale
+content; that was wrong.
+
+**The executable bit alone is sufficient.** Confirmed end to end
+against the real `serve_page`:
+
+| Page | Result |
+|---|---|
+| not executable | file bytes, verbatim |
+| executable | the process's stdout |
+
+The environment variables arrive as documented — a script printing
+`$remote_identity`, `$link_id` and `$var_x` received the requesting
+identity hash, the link id, and a request variable.
+
+**`.allowed` expects 32 hex characters per line.** That is
+`RNS.Identity.TRUNCATED_HASHLENGTH`, 128 bits, as hex. Confirmed
+behaviour:
+
+| Case | Result |
+|---|---|
+| identity in the list | page served |
+| identity not in the list | "Request Not Allowed" |
+| no identity at all | "Request Not Allowed" |
+| **hash of the wrong length** | **"Request Not Allowed"** |
+| executable `.allowed` | its stdout used as the list |
+
+The fourth row is the trap. A mistyped or truncated hash is skipped
+silently, and a file containing only bad lines produces an empty
+allowlist, which denies everyone. There is no error to tell you why.
+
+## Page colours
+
+Not a hosting question, but it surfaced here and is easy to miss. The
+browser scans the markup for `#!bg=` and `#!fg=` followed by exactly
+three characters, and uses them as the page background and foreground
+(`Browser.py:1094` onward). Both start with `#`, so Micron drops them
+as comments before rendering — they are configuration read out of the
+document rather than markup.
+
+## What is still unverified
+
+Only one thing, and it is a Reticulum property rather than a NomadNet
+one:
+
+**How long an announce takes to propagate**, and therefore how soon
+after starting a node another peer can reach it. The code path is clear
+— a path is requested and waited for — but the timing depends on the
+mesh, not on anything in this repository. Watching a real request
+arrive from a second node is the only way to see it.
+
+Everything above was verified against NomadNet's own code with the
+network stubbed. That establishes what the software does; it does not
+establish that a particular mesh will route to you.
