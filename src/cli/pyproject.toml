@@ -8,7 +8,10 @@ version = "0.1.0"
 description = "Convert ASCII/ANSI art into NomadNet Micron markup"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { file = "../../LICENSE" }
+# SPDX string rather than a file path: setuptools refuses to read a
+# licence outside the project directory, and LICENSE lives at the
+# repository root.
+license = "MIT"
 # Zero runtime dependencies, matching the browser build.
 dependencies = []
 
