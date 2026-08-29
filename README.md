@@ -1,29 +1,26 @@
 # micron-art
 
 Convert ASCII and ANSI art into [NomadNet](https://github.com/markqvist/NomadNet)
-Micron markup, so it survives being served from a Reticulum node.
+Micron markup, so we can have neat art on our Reticulum pages.
 
 **[Open the converter →](https://quetzal-root.github.io/micron-art/)**
 
 ![The converter with ASCII art loaded in literal mode, showing the art, the generated Micron and a preview of how it renders](docs/screenshot.png)
 
-Micron gives block meaning to the first character of a line. A dash draws
-a divider, a hash deletes the line, an angle bracket makes a heading — so
-art pasted straight into a `.mu` page is mangled before anyone sees it.
-This converts art into markup that renders as drawn.
+ASCII art breaks when pasted into a .mu file. 
+Micron reads certain leading characters as formatting commands:
+- becomes a divider, # deletes the line, and > becomes a heading.
+This tool escapes them so ASCII & ANSI art renders as drawn.
 
-Browser tool and Python CLI, sharing one set of test fixtures. No build
-step, no bundler, zero runtime dependencies.
+A browser tool and Python CLI is provided. They share a set of fixed inputs 
+that are tested against, and are also tested against the expected output.
+There's no build step, no bundler, zero runtime dependencies.
 
 ## Two output modes
+**Literal** wraps the art in `` `= `` and displays it as it's originally seen.
 
-They are not interchangeable, and neither is a fallback for the other.
-
-**Literal** wraps the art in `` `= `` and emits it verbatim. Safe for any
-art, but Micron disables markup inside the block, so it is monochrome.
-
-**Escaped** protects each significant character in place, which leaves
-colour and formatting available. This is the mode that keeps ANSI colour.
+**Escaped** protects color and formatting of the original text art.
+This is the mode that keeps ANSI color.
 
 ![ANSI art converted in escaped mode, with the preview showing the image rendered in colour](docs/screenshot-color.png)
 
@@ -33,7 +30,7 @@ NomadNet will render rather than a copy of the input.
 
 ## Quick start
 
-In the browser, paste art into [the converter](https://quetzal-root.github.io/micron-art/),
+In the browser, paste ANSI or ASCII text art into [the converter](https://quetzal-root.github.io/micron-art/),
 pick a mode, and copy the output.
 
 From the command line:
@@ -52,7 +49,7 @@ NomadNet:
 
     micronart -m literal art.txt > ~/.nomadnetwork/storage/pages/art.mu
 
-`docs/hosting.md` covers where pages live, why `index.mu` is the default,
+`docs/hosting.md` covers where pages are stored, why `index.mu` is the default,
 and how static and executable pages differ.
 
 ## Local development
@@ -68,9 +65,8 @@ Run the tests:
     node --test tests/*.test.js     # 114 tests
     python3 tests/test_converter.py # 56 tests
 
-Neither needs a test runner or any dependency. Both read
-`tests/fixtures/`, which is the source of truth for both
-implementations — if they disagree, that is a bug.
+No test runners or dependencies. Both tests read 
+`tests/fixtures/`.
 
 After changing the converter, rebuild the example pages and check nothing
 moved:
