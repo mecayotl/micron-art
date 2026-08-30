@@ -49,16 +49,16 @@ Literal wraps the art in \`=, so it survives exactly as drawn. Micron
 disables markup inside the block, so it is monochrome.
 
 Escaped protects each significant character in place, which leaves
-colour and formatting available. This is the mode that keeps ANSI
-colour.
+color and formatting available. This is the mode that keeps ANSI
+color.
 
-Neither is a fallback for the other. Pick by whether you need colour.
+Neither is a fallback for the other. Pick by whether you need color.
 
 >>Have a look
 
 `[Gallery`:/page/gallery.mu]
 
-The gallery shows both modes, a conversion from ANSI colour, and what
+The gallery shows both modes, a conversion from ANSI color, and what
 happens to art that is served without converting it first.
 EOF
 } > "$OUT/index.mu"
@@ -86,17 +86,17 @@ EOF
 >>Literal mode
 
 Wrapped in \`=, emitted verbatim. Nothing inside needs escaping, and
-nothing inside can be coloured.
+nothing inside can be colored.
 
 EOF
     convert literal "$ART/gallery-mono.txt"
     cat <<'EOF'
 
->>Escaped mode, with colour applied
+>>Escaped mode, with color applied
 
 The same art, escaped in place instead of wrapped. Because markup still
-works, a colour tag ahead of it applies to the whole block -- Micron
-carries colour state across lines.
+works, a color tag ahead of it applies to the whole block -- Micron
+carries color state across lines.
 
 `F0c0
 EOF
@@ -106,7 +106,7 @@ EOF
 
 >>Converted from ANSI
 
-Colour read from SGR escape sequences and mapped to Micron tags. Source
+Color read from SGR escape sequences and mapped to Micron tags. Source
 was a .ans file; see docs/ansi-mapping.md for what survives
 the conversion and what does not.
 

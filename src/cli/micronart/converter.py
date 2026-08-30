@@ -3,7 +3,7 @@
 Two output modes, which are not interchangeable:
 
   literal   wrapped in `=, emitted verbatim, monochrome
-  escaped   characters escaped in place, colour tags applied
+  escaped   characters escaped in place, color tags applied
 
 Mirrors src/converter.js. See tests/fixtures/README.md.
 """
@@ -23,7 +23,7 @@ LITERAL = "literal"
 ESCAPED = "escaped"
 MODES = (LITERAL, ESCAPED)
 
-# Closes any colour or attribute a line left open.
+# Closes any color or attribute a line left open.
 #
 # The renderer wraps each line in an attribute built from the state at
 # the end of that line, then pads the row to the terminal width with it.
@@ -34,20 +34,20 @@ RESET = "``"
 
 _ATTRIBUTE_TAGS = (("bold", "`!"), ("italic", "`*"), ("underline", "`_"))
 
-REVERSE_UNREPRESENTABLE = "reverse video with a default colour: dropped"
+REVERSE_UNREPRESENTABLE = "reverse video with a default color: dropped"
 
 
 def effective_colors(style, warnings, state):
-    """Resolve a cell's colours, applying reverse video at emission.
+    """Resolve a cell's colors, applying reverse video at emission.
 
-    Reverse is a rendering attribute in a terminal: the colours keep the
+    Reverse is a rendering attribute in a terminal: the colors keep the
     slots they were named for and are swapped when drawn. Resolving it
-    here rather than when the code is read means a colour set while
+    here rather than when the code is read means a color set while
     reverse is active lands where a terminal would put it.
 
     Micron has no reverse attribute, so the swap has to be written out as
-    concrete colours. That is only possible when both sides are set --
-    swapping against a default would need the document's default colour
+    concrete colors. That is only possible when both sides are set --
+    swapping against a default would need the document's default color
     as an explicit value, which is theme-dependent and not knowable here.
     """
     if not style.reverse:
@@ -72,7 +72,7 @@ def _is_default(style):
 
 
 def to_literal(parsed):
-    """Render parsed cells as a literal block, dropping all colour."""
+    """Render parsed cells as a literal block, dropping all color."""
     if not parsed:
         return ""
     body = [literal_line("".join(char for _, char in cells)) for cells in parsed]
@@ -80,7 +80,7 @@ def to_literal(parsed):
 
 
 def to_escaped(parsed, warnings=None):
-    """Render parsed cells with escaping and Micron colour tags.
+    """Render parsed cells with escaping and Micron color tags.
 
     Tags are emitted only when the state changes, not per cell: a
     per-cell encoding costs ten characters of markup per glyph. State is
@@ -110,7 +110,7 @@ def to_escaped(parsed, warnings=None):
                     setattr(current, name, getattr(style, name))
             # Escaping is applied per character rather than per line
             # because tags are interleaved with the text. A leading
-            # colour tag would already protect a block character, but
+            # color tag would already protect a block character, but
             # the escape is applied uniformly and renders correctly on
             # top of one.
             text = escape_text(char)
@@ -119,7 +119,7 @@ def to_escaped(parsed, warnings=None):
             buf.append(text)
 
         # Close the line if it left anything set. Art whose source has no
-        # colour emits nothing here, so a colour tag applied by hand ahead
+        # color emits nothing here, so a color tag applied by hand ahead
         # of the block still carries across its lines.
         if not _is_default(current):
             buf.append(RESET)
@@ -134,13 +134,13 @@ def convert(raw, mode):
     """Convert art to Micron markup.
 
     Returns (markup, warnings). `raw` may be plain text or contain SGR
-    colour; both take the same path.
+    color; both take the same path.
     """
     if mode not in MODES:
         raise ValueError("mode must be one of %s" % (", ".join(MODES),))
     parsed, warnings = parse_lines(split_lines(normalize_text(raw)))
     if mode == LITERAL:
-        # Literal mode drops all colour, so reverse cannot fail to be
+        # Literal mode drops all color, so reverse cannot fail to be
         # representable and raises nothing.
         markup = to_literal(parsed)
     else:

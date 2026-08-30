@@ -87,7 +87,7 @@ def test_xterm256_cube_and_greys():
 
 def test_unknown_mode_rejected():
     try:
-        convert("x", "colour")
+        convert("x", "color")
     except ValueError:
         return
     raise AssertionError("expected ValueError for an unknown mode")
@@ -144,7 +144,7 @@ def state_at_end_of_each_line(markup):
     return states
 
 
-def test_no_line_leaves_colour_open():
+def test_no_line_leaves_color_open():
     for name in fixture_names():
         markup, _ = convert(read(os.path.join(FIXTURES, "input", name)), "escaped")
         if markup == "":

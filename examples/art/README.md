@@ -28,8 +28,8 @@ comment lines before rendering, so they cost nothing on the page.
 | File | Used for |
 |---|---|
 | `banner.txt` | the banner on the index page, literal mode |
-| `gallery-mono.txt` | shown twice — literal, then escaped with a colour tag |
-| `gallery-color.ans` | ANSI colour input, converted in escaped mode |
+| `gallery-mono.txt` | shown twice — literal, then escaped with a color tag |
+| `gallery-color.ans` | ANSI color input, converted in escaped mode |
 | `gallery-hazard.txt` | leading dashes, backticks and a leading hash |
 
 `gallery-hazard.txt` appears twice in the gallery: once pasted in raw so

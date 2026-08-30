@@ -80,9 +80,9 @@ test("xterm256 resolves cube and greys", () => {
   assert.deepEqual(xterm256(1), [0xcd, 0x00, 0x00]);
 });
 
-test("colours compare by value, not reference", () => {
+test("colors compare by value, not reference", () => {
   // Arrays compare by reference in JavaScript. Without colorsEqual the
-  // emitter would treat every cell as a colour change.
+  // emitter would treat every cell as a color change.
   assert.ok(colorsEqual([1, 2, 3], [1, 2, 3]));
   assert.ok(!colorsEqual([1, 2, 3], [1, 2, 4]));
   assert.ok(colorsEqual(null, null));
@@ -90,7 +90,7 @@ test("colours compare by value, not reference", () => {
 });
 
 test("unknown mode is rejected", () => {
-  assert.throws(() => convert("x", "colour"), /mode must be one of/);
+  assert.throws(() => convert("x", "color"), /mode must be one of/);
 });
 
 // Deliberately an independent reader, not the converter's own state
@@ -150,7 +150,7 @@ function stateAtEndOfEachLine(markup) {
   return states;
 }
 
-test("no line of escaped output leaves colour or attributes open", () => {
+test("no line of escaped output leaves color or attributes open", () => {
   for (const name of fixtureNames()) {
     const stem = stemOf(name);
     const { markup } = convert(read(join(FIXTURES, "input", name)), "escaped");

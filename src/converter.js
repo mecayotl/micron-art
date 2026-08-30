@@ -3,7 +3,7 @@
 // Two output modes, which are not interchangeable:
 //
 //   literal   wrapped in `=, emitted verbatim, monochrome
-//   escaped   characters escaped in place, colour tags applied
+//   escaped   characters escaped in place, color tags applied
 //
 // Mirrors cli/micronart/converter.py. See tests/fixtures/README.md.
 
@@ -22,7 +22,7 @@ export const LITERAL = "literal";
 export const ESCAPED = "escaped";
 export const MODES = [LITERAL, ESCAPED];
 
-// Closes any colour or attribute a line left open.
+// Closes any color or attribute a line left open.
 //
 // The renderer wraps each line in an attribute built from the state at the
 // end of that line, then pads the row to the terminal width with it. A
@@ -49,18 +49,18 @@ const ATTRIBUTE_TAGS = [
 ];
 
 export const REVERSE_UNREPRESENTABLE =
-  "reverse video with a default colour: dropped";
+  "reverse video with a default color: dropped";
 
-// Resolve a cell's colours, applying reverse video at emission.
+// Resolve a cell's colors, applying reverse video at emission.
 //
-// Reverse is a rendering attribute in a terminal: the colours keep the
+// Reverse is a rendering attribute in a terminal: the colors keep the
 // slots they were named for and are swapped when drawn. Resolving it here
-// rather than when the code is read means a colour set while reverse is
+// rather than when the code is read means a color set while reverse is
 // active lands where a terminal would put it.
 //
 // Micron has no reverse attribute, so the swap has to be written out as
-// concrete colours. That is only possible when both sides are set --
-// swapping against a default would need the document's default colour as
+// concrete colors. That is only possible when both sides are set --
+// swapping against a default would need the document's default color as
 // an explicit value, which is theme-dependent and not knowable here.
 export function effectiveColors(style, warnings, state) {
   if (!style.reverse) return [style.fg, style.bg];
@@ -74,7 +74,7 @@ export function effectiveColors(style, warnings, state) {
   return [style.bg, style.fg];
 }
 
-// Render parsed cells as a literal block, dropping all colour.
+// Render parsed cells as a literal block, dropping all color.
 export function toLiteral(parsed) {
   if (parsed.length === 0) return "";
   const body = parsed.map((cells) =>
@@ -83,7 +83,7 @@ export function toLiteral(parsed) {
   return LITERAL_TOGGLE + "\n" + body.join("\n") + "\n" + LITERAL_TOGGLE + "\n";
 }
 
-// Render parsed cells with escaping and Micron colour tags.
+// Render parsed cells with escaping and Micron color tags.
 //
 // Tags are emitted only when the state changes, not per cell: a per-cell
 // encoding costs ten characters of markup per glyph. State is carried
@@ -118,7 +118,7 @@ export function toEscaped(parsed, warnings) {
       }
 
       // Escaping is applied per character rather than per line because
-      // tags are interleaved with the text. A leading colour tag would
+      // tags are interleaved with the text. A leading color tag would
       // already protect a block character, but the escape is applied
       // uniformly and renders correctly on top of one.
       let text = escapeText(char);
@@ -127,7 +127,7 @@ export function toEscaped(parsed, warnings) {
     }
 
     // Close the line if it left anything set. Art whose source has no
-    // colour emits nothing here, so a colour tag applied by hand ahead of
+    // color emits nothing here, so a color tag applied by hand ahead of
     // the block still carries across its lines.
     if (!isDefault(current)) {
       buf.push(RESET);
@@ -143,13 +143,13 @@ export function toEscaped(parsed, warnings) {
 // Convert art to Micron markup.
 //
 // Returns { markup, warnings }. `raw` may be plain text or contain SGR
-// colour; both take the same path.
+// color; both take the same path.
 export function convert(raw, mode) {
   if (!MODES.includes(mode)) {
     throw new Error("mode must be one of " + MODES.join(", "));
   }
   const { parsed, warnings } = parseLines(splitLines(normalizeText(raw)));
-  // Literal mode drops all colour, so reverse cannot fail to be
+  // Literal mode drops all color, so reverse cannot fail to be
   // representable and raises nothing.
   const markup =
     mode === LITERAL ? toLiteral(parsed) : toEscaped(parsed, warnings);

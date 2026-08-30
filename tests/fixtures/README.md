@@ -28,7 +28,7 @@ The art is wrapped in Micron literal mode and emitted verbatim:
 
 Nothing inside the block is escaped — with exactly one exception.
 Micron disables all markup parsing between the two `` `= `` toggles, so
-the art is monochrome; colour tags inside a literal block render as text,
+the art is monochrome; color tags inside a literal block render as text,
 they do not apply.
 
 **The one exception:** a line consisting of exactly `` `= `` toggles
@@ -45,7 +45,7 @@ fixture covers it because no correct output exists.
 ### `.escaped.mu` — escaped mode
 
 No literal block. Every Micron-significant character is escaped in place,
-so colour and formatting tags can be layered on later. Rules:
+so color and formatting tags can be layered on later. Rules:
 
 | in art | in output | why |
 |---|---|---|
@@ -111,7 +111,7 @@ and `.ans` for ANSI/SGR art.
 | `ansi-attributes` | bold, italic, underline, reverse, dropped blink |
 | `ansi-attribute-reset` | 22, 23, 24 and 27 turning attributes back off |
 | `ansi-malformed-color` | truncated and invalid 38/48 selectors |
-| `ansi-reverse-order` | colour set before, after and across reverse |
+| `ansi-reverse-order` | color set before, after and across reverse |
 | `ansi-out-of-range` | palette indices and components above 255 |
 | `chafa-output` | genuine chafa truecolor half-block output |
 
@@ -164,26 +164,26 @@ apply to art hosted on a NomadNet site over Reticulum, so nothing here
 guards a width threshold; `wide-200col` exists to prove long lines
 survive, not to mark a boundary.
 
-## ANSI colour
+## ANSI color
 
-`.ans` inputs carry SGR colour. The two modes diverge sharply here:
+`.ans` inputs carry SGR color. The two modes diverge sharply here:
 
-- **literal** — literal mode disables all markup, so colour is
+- **literal** — literal mode disables all markup, so color is
   impossible. All SGR is stripped and only the glyphs survive. This is
   the monochrome fallback, not a lesser version of escaped mode.
-- **escaped** — SGR is translated to Micron colour tags.
+- **escaped** — SGR is translated to Micron color tags.
 
-### Colour depth
+### Color depth
 
-Micron colour is **12-bit: 3 hex nibbles**, e.g. `` `Ff80 `` for
+Micron color is **12-bit: 3 hex nibbles**, e.g. `` `Ff80 `` for
 foreground and `` `Bf80 `` for background. This is not a style choice —
 the parser reads exactly three characters after `F`/`B` and no more.
-`` `Fff0000 `` sets colour `ff0` and then renders the literal text
+`` `Fff0000 `` sets color `ff0` and then renders the literal text
 `000` -- the tag eats five of the eight characters.
 `low_color`/`high_color` contain a six-digit branch, but markup
-cannot reach it; it serves only the page-level default colours.
+cannot reach it; it serves only the page-level default colors.
 
-Every source colour is therefore quantized to 4 bits per channel.
+Every source color is therefore quantized to 4 bits per channel.
 
 ### Mapping rules
 
@@ -212,10 +212,10 @@ to xterm's defaults so both implementations agree:
 
 ### Emission
 
-Tags are emitted **only when the colour changes**, not per cell — a
+Tags are emitted **only when the color changes**, not per cell — a
 per-cell encoding costs ten characters of markup per glyph.
 
-**Every line that sets colour closes it with `` `` ``.** Colour state does
+**Every line that sets color closes it with `` `` ``.** Color state does
 carry across lines in Micron — verified: `` `Ff00RED `` followed by a
 plain line renders *both* lines red — but that is precisely the problem.
 The renderer wraps each line in an attribute taken from the state at the
@@ -223,17 +223,17 @@ end of that line and pads the row to the terminal width with it, so a
 line ending with a background still set paints it all the way to the
 right edge. An underline does the same.
 
-Re-emitting the colour at the start of the next line costs a few
+Re-emitting the color at the start of the next line costs a few
 characters and is the price of the art ending where it is drawn.
 
-Art with no colour of its own emits nothing here, so a colour tag applied
+Art with no color of its own emits nothing here, so a color tag applied
 by hand ahead of a converted block still carries across its lines —
 `examples/gallery.mu` depends on that.
 
-A line-leading colour tag incidentally protects a line-leading block
+A line-leading color tag incidentally protects a line-leading block
 character, since the line no longer begins with `-` `#` `>` `<`. The
 escape is still applied uniformly — verified that `` `Fc00\- `` renders
-`-` correctly — so the escaping rule does not need a colour-aware
+`-` correctly — so the escaping rule does not need a color-aware
 special case.
 
 ### Regenerating `chafa-output`
@@ -241,7 +241,7 @@ special case.
 `chafa-output.ans` is **real chafa output**, not hand-written. The source
 image is committed at `src/chafa-source.png` — an 8x8 PNG with a smooth
 gradient on the left half and two flat blocks with a hard edge on the
-right, so the fixture exercises both per-cell colour changes and runs
+right, so the fixture exercises both per-cell color changes and runs
 that collapse to a single tag.
 
 Generated with chafa 1.14.0:
@@ -252,13 +252,13 @@ Generated with chafa 1.14.0:
           > input/chafa-output.ans
 
 Every flag is pinned deliberately. chafa otherwise probes the terminal
-and picks symbols, colour depth and optimization to match it, so
+and picks symbols, color depth and optimization to match it, so
 unpinned output drifts between environments and the fixture stops being
 reproducible. `--optimize 5` is chafa's default and is kept rather than
-lowered: at `-O 0` chafa emits a full reset and both colours before
+lowered: at `-O 0` chafa emits a full reset and both colors before
 every cell, while at `-O 5` it drops redundant tags and shares one tag
 across a run of glyphs. The compact form is what a user actually pastes,
-and it exercises colour state carried between cells.
+and it exercises color state carried between cells.
 
 The source image is reproducible too:
 
@@ -290,9 +290,9 @@ compared against the original input art. All expected files round-trip
 to the input exactly. Re-run that check when changing an expected file.
 
 For `.ans` fixtures the check is stronger: every rendered character is
-compared against its source cell for **both glyph and colour attribute**,
+compared against its source cell for **both glyph and color attribute**,
 so a wrong quantization or a dropped tag fails rather than passing
-silently. All 135 coloured cells match.
+silently. All 135 colored cells match.
 
 Facts established by that check, rather than assumed:
 
@@ -304,7 +304,7 @@ Facts established by that check, rather than assumed:
 - Blank lines are preserved in both modes; they bypass line parsing
   entirely.
 - Trailing whitespace is preserved as styled content in both modes, so it
-  will carry a background colour. Never `rstrip` a line.
+  will carry a background color. Never `rstrip` a line.
 - A line consisting of exactly `` `= `` toggles literal mode, even from
   inside a literal block. Art containing such a line will break out of
   the block. Inside literal mode, `` \`= `` is the escaped form.

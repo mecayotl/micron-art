@@ -32,9 +32,9 @@ class Style:
         self.bold = bold
         self.italic = italic
         self.underline = underline
-        # Reverse video is recorded, not applied. The colours keep the
+        # Reverse video is recorded, not applied. The colors keep the
         # slots they were named for and the swap happens at emission, so
-        # a colour set while reverse is active lands where a terminal
+        # a color set while reverse is active lands where a terminal
         # would put it. See converter.effective_colors.
         self.reverse = reverse
 
@@ -98,7 +98,7 @@ def apply_sgr(style, params, warnings):
                 index = codes[i + 2]
                 if not 0 <= index <= 255:
                     warnings.append(
-                        "colour index %d out of range: remainder ignored" % index
+                        "color index %d out of range: remainder ignored" % index
                     )
                     break
                 color = xterm256(index)
@@ -107,7 +107,7 @@ def apply_sgr(style, params, warnings):
                 rgb = (codes[i + 2], codes[i + 3], codes[i + 4])
                 if any(not 0 <= value <= 255 for value in rgb):
                     warnings.append(
-                        "colour component out of range: remainder ignored"
+                        "color component out of range: remainder ignored"
                     )
                     break
                 color = rgb
@@ -118,7 +118,7 @@ def apply_sgr(style, params, warnings):
                 # further SGR codes, which would apply attributes nobody
                 # asked for.
                 warnings.append(
-                    "malformed extended colour sequence: remainder ignored"
+                    "malformed extended color sequence: remainder ignored"
                 )
                 break
             if is_fg:

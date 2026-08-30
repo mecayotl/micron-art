@@ -24,14 +24,14 @@ Literal wraps the art in \`=, so it survives exactly as drawn. Micron
 disables markup inside the block, so it is monochrome.
 
 Escaped protects each significant character in place, which leaves
-colour and formatting available. This is the mode that keeps ANSI
-colour.
+color and formatting available. This is the mode that keeps ANSI
+color.
 
-Neither is a fallback for the other. Pick by whether you need colour.
+Neither is a fallback for the other. Pick by whether you need color.
 
 >>Have a look
 
 `[Gallery`:/page/gallery.mu]
 
-The gallery shows both modes, a conversion from ANSI colour, and what
+The gallery shows both modes, a conversion from ANSI color, and what
 happens to art that is served without converting it first.
