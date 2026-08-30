@@ -84,12 +84,9 @@ moved:
 
 ## Documentation
 
-- **`docs/micron-notes.md`** — Micron syntax findings with sources, and why
-  the escaping rules are what they are
 - **`docs/ansi-mapping.md`** — which SGR codes are handled, the color
   tables, and what a 24-bit conversion gives up
-- **`docs/hosting.md`** — getting a page onto a node
-- **`tests/fixtures/README.md`** — the fixture contract
+- **`tests/fixtures/README.md`** — set of files that tests are validated against
 
 ## Contributing
 
