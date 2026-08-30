@@ -71,14 +71,38 @@ Watch for these, which have all bitten before:
 
 ## Hard constraints
 
-`Claude.md` holds them. In short:
+These are not preferences. Changing any of them changes what the project
+is.
 
-- No npm, no build step, no bundler, zero runtime dependencies
-- Browser code is ES modules in `src/`, loaded with `<script type="module">`
-- The module graph stays flat and acyclic:
-  `palette -> escape, ansi -> converter -> preview -> app`
-- Named exports only — no default exports, no namespace imports, no
-  dynamic `import()`, all imports at the top of the file
+- **No npm, no build step, no bundler, zero runtime dependencies.** What
+  is in the repository is what runs.
+- **Browser code is ES modules in `src/`**, loaded with
+  `<script type="module">`. Module imports fail over `file://`, so a
+  local server is required: `python3 -m http.server 8000`.
+- **The module graph stays flat and acyclic**, in this order:
+  `palette -> escape, ansi -> converter -> preview -> app`. A future
+  concatenation script would depend on that order.
+- **Named exports only** — no default exports, no namespace imports, no
+  dynamic `import()`, and all imports at the top of the file.
+- **`src/cli/micronart/*.py` mirrors `src/*.js` exactly.** Both read
+  `tests/fixtures/`; if they disagree, one of them is wrong.
+- **`dist/` is generated.** Never edit it directly.
+
+## Micron rules worth knowing before you start
+
+The full reasoning, with sources, is in `docs/micron-notes.md`. The short
+version:
+
+- A backtick opens a tag, so a backtick in art becomes `` \` `` and a
+  backslash becomes `\\`.
+- Line-leading `>` `<` `-` `#` carry block meaning and are mangled or
+  deleted unless protected. A leading backslash protects them and is
+  consumed, costing zero columns.
+- Literal mode (`` `= ``) is safe for any art but disables markup, so it
+  is monochrome. Escaped mode keeps colour. They are not
+  interchangeable and neither is a fallback for the other.
+- Never centre multi-line art with `` `c `` — it centres each line
+  independently and shears the shape.
 
 ## Style
 
