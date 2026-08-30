@@ -48,9 +48,6 @@ NomadNet:
 
     micronart -m literal art.txt > ~/.nomadnetwork/storage/pages/art.mu
 
-`docs/hosting.md` covers where pages are stored, why `index.mu` is the default,
-and how static and executable pages differ.
-
 ## Local development
 
 Clone the repo, then start a server.
