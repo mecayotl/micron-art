@@ -7,27 +7,27 @@ The two implementations were compared across 694 SGR cases and 256 palette indic
 malformed sequences, attribute toggles in both directions, and
 multi-line color carry-over. 
 
-Color only survives in **escaped** mode. Literal mode disables Micron
-markup entirely, so every SGR sequence is stripped and only the glyphs
-remain. 
+**escaped** mode maintains the color in the original text art. 
+**literal** mode disables Micron markup entirely, so every SGR 
+sequence is stripped and only glyphs remain. 
 
 ## What is recognized
 
 | SGR | Meaning | Result |
 |---|---|---|
-| `0` | reset | clears colours and all attributes |
+| `0` | reset | clears colors and all attributes |
 | `1` | bold | `` `! `` |
 | `2` | faint | dropped, **with a warning** |
 | `3` | italic | `` `* `` |
 | `4` | underline | `` `_ `` |
 | `5`, `6` | blink | dropped, **with a warning** |
-| `7` | reverse video | swaps the colours **at emission** |
+| `7` | reverse video | swaps the colors **at emission** |
 | `22` | normal intensity | clears bold |
 | `23` | italic off | clears italic |
 | `24` | underline off | clears underline |
 | `27` | reverse off | clears the swap |
 | `30`–`37` | foreground, base 8 | `` `F `` + table below |
-| `38;5;N` | foreground, 256-colour | `` `F `` + cube/grey rules |
+| `38;5;N` | foreground, 256-color | `` `F `` + cube/grey rules |
 | `38;2;R;G;B` | foreground, 24-bit | `` `F `` + quantization |
 | `39` | default foreground | `` `f `` |
 | `40`–`47` | background, base 8 | `` `B `` + table below |
@@ -36,31 +36,25 @@ remain.
 | `90`–`97` | foreground, bright 8 | `` `F `` + table below |
 | `100`–`107` | background, bright 8 | `` `B `` + table below |
 
-**Everything else is dropped silently** — no warning, no trace in the
-output. That includes `8` (conceal), `9` (strikethrough), `21`, `53`
-(overline), and any code with no meaning at all.
+**Everything else is dropped silently** — That includes `8` (conceal), 
+`9` (strikethrough), `21`, `53` (overline).
 
-Warnings are raised only for `2`, `5`, `6`, reverse video against a
-default colour, a malformed extended-colour sequence, and a colour value
-out of range. Everything else vanishes without comment.
+Warnings are raised for `2`, `5`, `6`, reverse video against a
+default color, a malformed extended-color sequence, and a color value
+out of range. 
 
 Tags are emitted only when the state changes, not per cell. **Every line
-that sets colour closes it with `` `` ``.**
+that sets color closes it with `` `` ``.**
 
-That closing tag is not tidiness. The renderer wraps each line in an
-attribute built from the state at the *end* of that line, then pads the
-row out to the terminal width using it. A background still set when the
-line ends is painted across the whole remaining width, so coloured art
-grows a bar of colour running to the right edge of the terminal. An
-underline does the same. Bold and italic do not show on blank padding,
-but the same tag clears them.
+The renderer wraps each line in an attribute built from the state at the
+*end* of that line, then pads the row out to the terminal width using it. 
 
-Colour state does carry across lines in Micron — `` `Ff00RED `` followed
+Color state does carry across lines in Micron — `` `Ff00RED `` followed
 by a plain line renders both red — which is exactly why the leak happens
-and why each line has to be closed. Re-emitting the colour at the start
+and why each line has to be closed. Re-emitting the color at the start
 of the next line is the price of the art ending where it is drawn.
 
-Art with no colour of its own emits nothing here, so a colour tag applied
+Art with no color of its own emits nothing here, so a color tag applied
 by hand ahead of a converted block still carries across all of its lines.
 `examples/gallery.mu` relies on that.
 
@@ -74,35 +68,34 @@ same tag a second time:
 `X` is bold, italic and underlined; `Y` keeps the italic and underline
 but not the bold.
 
-`27` undoes the colour swap that `7` applied:
+`27` undoes the color swap that `7` applied:
 
     ESC[31;42;7m X ESC[27m Y  ->  `F0c0`Bc00X`Fc00`B0c0Y``
 
 `22` corresponds to ECMA-48 "normal intensity", which also clears faint.
-Faint is not tracked here, so that part is a no-op.
+Faint is not tracked here.
 
 `7` is idempotent — a second `7` with a swap already applied does
-nothing, rather than swapping back. Use `27` for that. A `27` with no
-swap outstanding is likewise a no-op.
+nothing, rather than swapping back. Use `27` for that. 
 
 ## Reverse video
 
 Reverse is recorded as state and **resolved when a tag is written**, the
-way a terminal treats it: the colours keep the slots they were named for
+way a terminal treats it: the colors keep the slots they were named for
 and the swap happens at draw time.
 
-That matters whenever colour and reverse are interleaved. Setting a
+That matters whenever color and reverse are interleaved. Setting a
 foreground while reverse is active puts it in the *background*, because
 that is where it ends up once the swap is applied:
 
     ESC[31;42;7m SWAP ESC[34m LATEFG
       ->  `F0c0`Bc00SWAP`B00eLATEFG
 
-`SWAP` is green on red. `LATEFG` is still green on the *new* colour,
+`SWAP` is green on red. `LATEFG` is still green on the *new* color,
 because the blue foreground that was set second is what the swap moves
 to the background.
 
-Order no longer matters either. Reverse before any colour works, because
+Order no longer matters. Reverse before any color works, because
 nothing is resolved until emission:
 
     ESC[7m ESC[31;42m AFTER   ->   `F0c0`Bc00AFTER
@@ -111,13 +104,13 @@ nothing is resolved until emission:
 paired in any order without accumulating swaps.
 
 Micron has no reverse attribute, so the swap must be written out as
-concrete colours. That is only possible when **both** sides are set.
-Swapping against a default would require the document's default colour
+concrete colors. That is only possible when **both** sides are set.
+Swapping against a default would require the document's default color
 as an explicit value, which is theme-dependent and not knowable at
 conversion time, so a one-sided reverse is dropped with a warning and
-the colours are emitted unswapped.
+the colors are emitted unswapped.
 
-## Malformed extended-colour sequences
+## Malformed extended-color sequences
 
 When `38` or `48` is not followed by a well-formed selector, the rest of
 the sequence is **abandoned** and a warning is raised. Nothing is
@@ -125,35 +118,31 @@ applied:
 
 | Input | Result |
 |---|---|
-| `ESC[38;5m` | no colour, malformed warning |
-| `ESC[38;2;1;2m` | no colour, malformed warning |
-| `ESC[38;9;1m` | no colour, malformed warning |
+| `ESC[38;5m` | no color, malformed warning |
+| `ESC[38;2;1;2m` | no color, malformed warning |
+| `ESC[38;9;1m` | no color, malformed warning |
 
-A colour value outside `0`–`255` is treated the same way. `255` is the
-last valid palette index; `256` and above are rejected rather than
-resolved, which previously ran them through the grey-ramp formula and
-clamped them to white:
+A color value outside `0`–`255` is treated the same way. `255` is the
+last valid palette index; `256` and above are rejected.
 
 | Input | Result |
 |---|---|
 | `ESC[38;5;255m` | grey 238, `eee` |
-| `ESC[38;5;256m` | no colour, out-of-range warning |
-| `ESC[38;2;300;0;0m` | no colour, out-of-range warning |
+| `ESC[38;5;256m` | no color, out-of-range warning |
+| `ESC[38;2;300;0;0m` | no color, out-of-range warning |
 
 Only the remainder of that one sequence is discarded. A later, separate
 sequence is unaffected — `ESC[38;5mBAD` `ESC[32mGOOD` leaves `BAD`
-uncoloured and `GOOD` green.
+uncolored and `GOOD` green.
 
 Empty parameter lists and empty fields read as `0`, which is what
 ECMA-48 specifies: `ESC[m` is a full reset, and `ESC[1;;2m` is
 `1`, `0`, `2` — the empty field resets the bold that preceded it.
 
-## The 16 standard colours
+## The 16 standard colors
 
-The base 16 are theme-dependent in real terminals — there is no correct
-answer, only a documented one. These are pinned to **xterm's defaults**
-so both implementations agree, and quantized with the same rule as
-everything else.
+The base 16 are theme-dependent in real terminals. These are pinned 
+to **xterm's defaults** so both implementations agree.
 
 | SGR fg | SGR bg | Name | xterm RGB | Micron |
 |---|---|---|---|---|
@@ -175,10 +164,10 @@ everything else.
 | 97 | 107 | bright white | `#ffffff` | `fff` |
 
 If your terminal uses a different palette — VGA, Solarized, anything
-themed — colours converted from `30`–`37` will not match what you saw on
-screen. Convert from truecolour if that matters.
+themed — colors converted from `30`–`37` will not match what you saw on
+screen. Convert from truecolor in that case.
 
-## Bold is intensity, never a colour shift
+## Bold formatting
 
 `1` sets the bold attribute and emits `` `! ``. It **does not** brighten
 the foreground.
@@ -187,11 +176,11 @@ the foreground.
     ESC[91m    ->  `Ff00       bright red, not bold
 
 Many terminals render `ESC[1;31m` as bright red, so a capture that relied
-on that will come out darker than it looked, and bold instead. Whether
+on that will come out darker than it looked and bold instead. Whether
 NomadNet renders bold as a weight change or as brightness is up to the
-client. Art that needs bright colours should use `90`–`97` or truecolour.
+client. Art that needs bright colors should use `90`–`97` or truecolor.
 
-## 256-colour palette
+## 256-color palette
 
 Indices resolve before quantization:
 
@@ -201,20 +190,18 @@ Indices resolve before quantization:
   `[0, 95, 135, 175, 215, 255]`.
 - **232–255** — the grey ramp, `8 + 10 × (n - 232)`, giving 8 to 238.
 
-## 24-bit truecolour
+## 24-bit truecolor
 
 `38;2;R;G;B` is taken directly, then quantized like everything else.
 
-## Quantization: round, not truncate
+## Quantization
 
-Micron colour is three hex nibbles — 4 bits per channel — because the
-NomadNet parser reads exactly three characters after `F`/`B`. Every
-source colour lands in that space:
+Micron color is three hex nibbles — 4 bits per channel — because the
+NomadNet parser reads exactly three characters after `F`/`B`.
 
     nibble = round(value / 17)
-
-Rounding rather than truncating (`value >> 4`) is deliberate. Truncation
-costs the same and biases every image darker:
+ 
+Truncation makes every image darker:
 
 | value | `round(v/17)` | `v >> 4` |
 |---|---|---|
@@ -226,21 +213,18 @@ costs the same and biases every image darker:
 
 Worst-case per-channel error is **8 of 255, about 3.1%**.
 
-## What you give up
+## Trade-offs
 
-Converting a 24-bit chafa render is lossy, in ways worth knowing before
-you spend effort on the source image.
+Converting a 24-bit chafa render is lossy.
 
-**16.7 million colours become 4096.** Each channel keeps 4 bits of the
+**16.7 million colors become 4096.** Each channel keeps 4 bits of the
 original 8. Smooth gradients band: adjacent cells that differed by a few
-units collapse onto the same nibble and the transition becomes a step.
-Small images and flat-colour art survive this well; photographic
-gradients do not.
+units collapse onto the same nibble.
+Small images and flat-color art are converted well; photographic
+gradients may be missing the incremental gradient.
 
-**The 256-colour palette is not injective under conversion.** It
-collapses to 233 distinct Micron colours — 17 colours absorb 40 indices.
-The grey ramp suffers most, since its 10-unit steps are finer than the
-17-unit quantum:
+**The 256-color palette collapses to 233 Micron colors.** 
+17 colors absorb 40 indices. 
 
 | Micron | absorbs |
 |---|---|
@@ -262,21 +246,14 @@ The grey ramp suffers most, since its 10-unit steps are finer than the
 | `ff0` | 11 (base), 226 (cube) |
 | `fff` | 15 (base), 231 (cube) |
 
-Two adjacent greys in the source can therefore become the same colour,
+Two adjacent greys in the source can therefore become the same color,
 flattening detail that looked fine in the terminal. Nearly half the grey
 ramp collapses in pairs.
 
-**Micron's `` `gNN `` grey ramp is deliberately unused.** It offers 100
+TODO: 
+
+**Micron's `` `gNN `` grey ramp implementation** It offers 100
 levels against 16 and would preserve grey detail much better, but it is a
 second code path to keep identical across two implementations. Greys go
 through RGB nibbles like everything else. Worth revisiting if greyscale
 conversion becomes a priority.
-
-**Attributes are thinner than ANSI.** Faint, blink, conceal,
-strikethrough and overline have no Micron equivalent. Reverse video
-survives only when both colours are explicitly set, since the swap has to
-be written out as concrete values; see above.
-
-**Nothing is preserved for later.** Unsupported codes are discarded, not
-carried through as text or metadata. Converting is one-way: the `.mu`
-output cannot be turned back into the original ANSI.
