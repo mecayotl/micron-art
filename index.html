@@ -53,16 +53,16 @@
             <input type="radio" name="mode" value="literal" checked />
             <span class="mode-name">Literal</span>
             <span class="mode-note">
-              Wrapped in <code>`=</code> and emitted verbatim. Safe for any art,
-              but Micron disables markup inside the block, so it is monochrome.
+              Wrapped in <code>`=</code> and displayed as-is. Safe for any art,
+              but Micron disables markup inside the block, so the art is monochrome.
             </span>
           </label>
           <label class="mode">
             <input type="radio" name="mode" value="escaped" />
             <span class="mode-name">Escaped</span>
             <span class="mode-note">
-              Each significant character escaped in place, so colour and
-              formatting survive. Required to keep ANSI colour.
+              Each significant character escaped in place, so color and
+              formatting remain. Required to keep ANSI colour.
             </span>
           </label>
         </div>
@@ -89,8 +89,7 @@
         </div>
         <p class="hint">
           The markup above, read back through a Micron reader. This is what
-          NomadNet should show — if it looks wrong here, it will look wrong
-          there.
+          NomadNet should show.
         </p>
         <div id="preview" class="preview" aria-live="polite"></div>
       </section>
@@ -98,10 +97,8 @@
 
     <footer>
       <p>
-        Two output modes, not interchangeable. Literal is monochrome; escaped
-        keeps colour. See
-        <code>tests/fixtures/README.md</code> for the escaping rules and why
-        they are what they are.
+        Two output modes: literal is monochrome, escaped
+        keeps color.
       </p>
     </footer>
 
