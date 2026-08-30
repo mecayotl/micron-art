@@ -36,37 +36,16 @@
           autocapitalize="off"
           autocomplete="off"
           placeholder="Paste ASCII art, or pipe chafa output into a file and load it."
-          aria-describedby="art-hint"
         ></textarea>
-      </section>
-
-      <section class="panel" aria-labelledby="mode-heading">
-        <div class="panel-head">
-          <h2 id="mode-heading">Mode</h2>
-        </div>
-        <div class="modes" role="radiogroup" aria-labelledby="mode-heading">
-          <label class="mode">
-            <input type="radio" name="mode" value="literal" checked />
-            <span class="mode-name">Literal</span>
-            <span class="mode-note">
-              Wrapped in <code>`=</code> and displayed as-is. Safe for any art,
-              but Micron disables markup inside the block, so the art comes out in monochrome.
-            </span>
-          </label>
-          <label class="mode">
-            <input type="radio" name="mode" value="escaped" />
-            <span class="mode-name">Escaped</span>
-            <span class="mode-note">
-              Each significant character escaped in place, so color and
-              formatting remain. Required to keep ANSI colour.
-            </span>
-          </label>
-        </div>
       </section>
 
       <section class="panel" aria-labelledby="output-heading">
         <div class="panel-head">
           <h2 id="output-heading">Micron</h2>
+          <div class="segmented" role="radiogroup" aria-label="Output mode">
+            <label><input type="radio" name="mode" value="literal" checked /><span>Monochrome</span></label>
+            <label><input type="radio" name="mode" value="escaped" /><span>Keep Color</span></label>
+          </div>
           <div class="panel-actions">
             <button id="copy" type="button">Copy</button>
             <button id="download" type="button">Download .mu</button>
@@ -80,11 +59,13 @@
         <div class="panel-head">
           <h2 id="preview-heading">Preview</h2>
         </div>
-        <p class="hint">
-          The markup above, read back through a Micron reader. This is what
-          NomadNet should show.
-        </p>
         <div id="preview" class="preview" aria-live="polite"></div>
+        <p class="hint">
+          Read back through a Micron reader: what NomadNet should show.
+          <strong>Monochrome</strong> writes <code>literal</code> mode,
+          <strong>Keep Color</strong> writes <code>escaped</code> — the names
+          the CLI and the downloaded file use.
+        </p>
       </section>
     </main>
     <script type="module" src="src/app.js"></script>

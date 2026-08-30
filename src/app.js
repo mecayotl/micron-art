@@ -25,7 +25,6 @@ const elements = {
   output: document.getElementById("output"),
   preview: document.getElementById("preview"),
   warnings: document.getElementById("warnings"),
-  stats: document.getElementById("stats"),
   file: document.getElementById("file"),
   copy: document.getElementById("copy"),
   download: document.getElementById("download"),
@@ -116,15 +115,6 @@ function update() {
   elements.preview.textContent = "";
   elements.preview.appendChild(fragment);
 
-  const artLines = raw === "" ? 0 : raw.replace(/\n$/, "").split("\n").length;
-  const widest = lines.reduce((max, line) => {
-    if (line.kind === "divider") return max;
-    const width = line.segments.reduce((n, s) => n + [...s.text].length, 0);
-    return Math.max(max, width);
-  }, 0);
-  elements.stats.textContent = markup
-    ? `${artLines} line${artLines === 1 ? "" : "s"} in, ${markup.length} characters of Micron, widest row ${widest} columns`
-    : "";
 }
 
 function download() {
