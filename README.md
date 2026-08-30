@@ -3,7 +3,7 @@
 A tool to convert ASCII and ANSI art into [NomadNet](https://github.com/markqvist/NomadNet)
 Micron markup.
 
-**[Open the converter →](https://quetzal-root.github.io/micron-art/)**
+**[Open the converter →](https://mecayotl.github.io/micron-art/)**
 
 ![The converter with ASCII art loaded in literal mode, showing the art, the generated Micron, and a preview of how it renders](docs/screenshot.png)
 
@@ -29,7 +29,7 @@ NomadNet will render.
 
 ## Quick start
 
-In the browser, paste ANSI or ASCII text art into [the converter](https://quetzal-root.github.io/micron-art/),
+In the browser, paste ANSI or ASCII text art into [the converter](https://mecayotl.github.io/micron-art/),
 pick a mode, and copy the output.
 
 From the command line:
