@@ -27,7 +27,7 @@ sequence is stripped and only glyphs remain.
 | `24` | underline off | clears underline |
 | `27` | reverse off | clears the swap |
 | `30`–`37` | foreground, base 8 | `` `F `` + table below |
-| `38;5;N` | foreground, 256-color | `` `F `` + cube/grey rules |
+| `38;5;N` | foreground, 256-color | `` `F `` + cube/gray rules |
 | `38;2;R;G;B` | foreground, 24-bit | `` `F `` + quantization |
 | `39` | default foreground | `` `f `` |
 | `40`–`47` | background, base 8 | `` `B `` + table below |
@@ -127,7 +127,7 @@ last valid palette index; `256` and above are rejected.
 
 | Input | Result |
 |---|---|
-| `ESC[38;5;255m` | grey 238, `eee` |
+| `ESC[38;5;255m` | gray 238, `eee` |
 | `ESC[38;5;256m` | no color, out-of-range warning |
 | `ESC[38;2;300;0;0m` | no color, out-of-range warning |
 
@@ -188,7 +188,7 @@ Indices resolve before quantization:
 - **16–231** — the 6×6×6 cube. Index `n - 16` decomposes as
   `36r + 6g + b`, and each component maps through the level table
   `[0, 95, 135, 175, 215, 255]`.
-- **232–255** — the grey ramp, `8 + 10 × (n - 232)`, giving 8 to 238.
+- **232–255** — the gray ramp, `8 + 10 × (n - 232)`, giving 8 to 238.
 
 ## 24-bit truecolor
 
@@ -228,17 +228,17 @@ gradients may be missing the incremental gradient.
 
 | Micron | absorbs |
 |---|---|
-| `000` | 0 (base), 16 (cube), 232 (grey) |
-| `222` | 234, 235 (grey) |
-| `333` | 236, 237 (grey) |
-| `555` | 239, 240 (grey) |
-| `666` | 59 (cube), 241, 242 (grey) |
-| `777` | 8 (base), 243 (grey) |
-| `888` | 102 (cube), 244, 245 (grey) |
-| `999` | 246, 247 (grey) |
-| `aaa` | 145 (cube), 248, 249 (grey) |
-| `ccc` | 251, 252 (grey) |
-| `ddd` | 7 (base), 188 (cube), 253, 254 (grey) |
+| `000` | 0 (base), 16 (cube), 232 (gray) |
+| `222` | 234, 235 (gray) |
+| `333` | 236, 237 (gray) |
+| `555` | 239, 240 (gray) |
+| `666` | 59 (cube), 241, 242 (gray) |
+| `777` | 8 (base), 243 (gray) |
+| `888` | 102 (cube), 244, 245 (gray) |
+| `999` | 246, 247 (gray) |
+| `aaa` | 145 (cube), 248, 249 (gray) |
+| `ccc` | 251, 252 (gray) |
+| `ddd` | 7 (base), 188 (cube), 253, 254 (gray) |
 | `f00` | 9 (base), 196 (cube) |
 | `0f0` | 10 (base), 46 (cube) |
 | `0ff` | 14 (base), 51 (cube) |
@@ -246,14 +246,14 @@ gradients may be missing the incremental gradient.
 | `ff0` | 11 (base), 226 (cube) |
 | `fff` | 15 (base), 231 (cube) |
 
-Two adjacent greys in the source can therefore become the same color,
-flattening detail that looked fine in the terminal. Nearly half the grey
+Two adjacent grays in the source can therefore become the same color,
+flattening detail that looked fine in the terminal. Nearly half the gray
 ramp collapses in pairs.
 
 TODO: 
 
-**Micron's `` `gNN `` grey ramp implementation** It offers 100
-levels against 16 and would preserve grey detail much better, but it is a
-second code path to keep identical across two implementations. Greys go
-through RGB nibbles like everything else. Worth revisiting if greyscale
+**Micron's `` `gNN `` gray ramp implementation** It offers 100
+levels against 16 and would preserve gray detail much better, but it is a
+second code path to keep identical across two implementations. Grays go
+through RGB nibbles like everything else. Worth revisiting if grayscale
 conversion becomes a priority.

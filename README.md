@@ -89,6 +89,6 @@ moved:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## Licence
+## License
 
 MIT. See [LICENSE](LICENSE).
