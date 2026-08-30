@@ -30,8 +30,7 @@ caught colour bleeding to the terminal edge, and what corrected a wrong
 description of how dash-leading lines fail. Both looked fine on paper.
 
 If you have NomadNet installed, import `MicronParser` directly with a
-stubbed application object and render your markup. `docs/micron-notes.md`
-records what has already been established and how.
+stubbed application object and render your markup.
 
 ## Running the tests
 
@@ -90,8 +89,8 @@ is.
 
 ## Micron rules worth knowing before you start
 
-The full reasoning, with sources, is in `docs/micron-notes.md`. The short
-version:
+These were established by rendering markup through NomadNet's own parser,
+not by reading its documentation:
 
 - A backtick opens a tag, so a backtick in art becomes `` \` `` and a
   backslash becomes `\\`.
