@@ -1,27 +1,27 @@
 # micron-art
 
-Convert ASCII and ANSI art into [NomadNet](https://github.com/markqvist/NomadNet)
-Micron markup, so we can have neat art on our Reticulum pages.
+A tool to convert ASCII and ANSI art into [NomadNet](https://github.com/markqvist/NomadNet)
+Micron markup.
 
 **[Open the converter →](https://quetzal-root.github.io/micron-art/)**
 
-![The converter with ASCII art loaded in literal mode, showing the art, the generated Micron and a preview of how it renders](docs/screenshot.png)
+![The converter with ASCII art loaded in literal mode, showing the art, the generated Micron, and a preview of how it renders](docs/screenshot.png)
 
 ASCII and ANSI art break sometimes when pasted into a .mu file. 
 That's because Micron reads certain leading characters 
 as formatting commands: - becomes a divider, # deletes the line, and > becomes a heading.
-This tool escapes them so ASCII & ANSI art render as drawn.
+This tool escapes them so ASCII & ANSI art render in Micron as drawn.
 
-A browser tool and Python CLI is provided. They share a set of fixed inputs 
-that are tested against, and are also tested against the expected output.
+A browser tool along with a Python CLI are provided. They share a suite of tests 
+to make sure they stay in sync with each other. 
 
 ## Two output modes
-**Literal** wraps the art in `` `= `` and displays it as it's originally seen.
+**Literal** wraps the art in `` `= `` and displays it in a monochromatic format. 
 
 **Escaped** protects color and formatting of the original text art.
 This is the mode that keeps ANSI color.
 
-![ANSI art converted in escaped mode, with the preview showing the image rendered in colour](docs/screenshot-color.png)
+![ANSI art converted in escaped mode, with the preview showing the image rendered in color](docs/screenshot-color.png)
 
 Above: `chafa` output pasted in, converted in escaped mode. The preview
 reads the generated markup back through a Micron reader, so it shows what
@@ -36,8 +36,8 @@ From the command line:
 
     pip install -e src/cli
 
-    micronart art.txt                 # literal mode, the default
-    micronart -m escaped art.txt      # keeps colour
+    micronart art.txt                          # literal mode, the default
+    micronart -m escaped art.txt               # keeps color
     chafa image.png | micronart -m escaped
 
 Markup goes to standard output and warnings to standard error, so
@@ -86,7 +86,7 @@ moved:
 
 - **`docs/micron-notes.md`** — Micron syntax findings with sources, and why
   the escaping rules are what they are
-- **`docs/ansi-mapping.md`** — which SGR codes are handled, the colour
+- **`docs/ansi-mapping.md`** — which SGR codes are handled, the color
   tables, and what a 24-bit conversion gives up
 - **`docs/hosting.md`** — getting a page onto a node
 - **`tests/fixtures/README.md`** — the fixture contract
