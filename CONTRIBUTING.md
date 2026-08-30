@@ -15,7 +15,7 @@ Step 2 is not ceremony. A fixture that passes before the change tests
 nothing, and it is easy to write one by accident.
 
 **Never edit an expected file to make a test pass.** Change it only when
-the Micron behaviour it encodes has been re-verified against a real
+the Micron behavior it encodes has been re-verified against a real
 render, and say so in the commit message.
 
 ## Verifying against a real render
@@ -100,13 +100,13 @@ not by reading its documentation:
 - Literal mode (`` `= ``) is safe for any art but disables markup, so it
   is monochrome. Escaped mode keeps color. They are not
   interchangeable and neither is a fallback for the other.
-- Never centre multi-line art with `` `c `` — it centres each line
+- Never center multi-line art with `` `c `` — it centers each line
   independently and shears the shape.
 
 ## Style
 
 Match the surrounding code. Comments explain *why*, particularly where
-the behaviour is surprising — most of the non-obvious lines in this
+the behavior is surprising — most of the non-obvious lines in this
 project exist because of something specific in the Micron parser, and the
 comment is the only record of it.
 

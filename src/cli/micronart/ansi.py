@@ -132,7 +132,7 @@ def parse_lines(lines):
     """Parse normalized lines into (cells, warnings).
 
     Each cell is a (Style, character) pair. Graphic state carries across
-    line boundaries, matching terminal behaviour.
+    line boundaries, matching terminal behavior.
     """
     style = Style()
     warnings = []

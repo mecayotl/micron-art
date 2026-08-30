@@ -106,7 +106,7 @@ and `.ans` for ANSI/SGR art.
 | `empty-file` | zero-byte input |
 | `no-trailing-newline` | input with no final newline |
 | `ansi-16color` | SGR 30-37 / 90-97, xterm palette |
-| `ansi-256color` | SGR 38;5;N — cube, greyscale ramp and base 16 |
+| `ansi-256color` | SGR 38;5;N — cube, grayscale ramp and base 16 |
 | `ansi-truecolor` | SGR 38;2;R;G;B, foreground and background |
 | `ansi-attributes` | bold, italic, underline, reverse, dropped blink |
 | `ansi-attribute-reset` | 22, 23, 24 and 27 turning attributes back off |
@@ -150,7 +150,7 @@ Micron parser, and a reviewer may reasonably want them changed:
   not. See `no-trailing-newline`.
 
 Everything under "How these were verified" is the opposite: observed
-parser behaviour, not preference.
+parser behavior, not preference.
 
 ## Column width
 
@@ -190,7 +190,7 @@ Every source color is therefore quantized to 4 bits per channel.
 | source | rule |
 |---|---|
 | 24-bit `38;2;R;G;B` | direct |
-| 8-bit `38;5;N` | xterm 256: cube levels `0,95,135,175,215,255`; greys `8+10n` |
+| 8-bit `38;5;N` | xterm 256: cube levels `0,95,135,175,215,255`; grays `8+10n` |
 | 4-bit `30-37`, `90-97` | xterm default palette, tabulated below |
 | quantization | `round(v / 17)` per channel — **round, not truncate** |
 | `1` / `3` / `4` | `` `! `` / `` `* `` / `` `_ `` |
@@ -199,7 +199,7 @@ Every source color is therefore quantized to 4 bits per channel.
 | `39` / `49` | `` `f `` / `` `b `` |
 
 Truncation (`v >> 4`) would bias every image darker by up to 6% for the
-same cost, so rounding is used. Greys are emitted as ordinary RGB
+same cost, so rounding is used. Grays are emitted as ordinary RGB
 nibbles; Micron's `` `gNN `` ramp offers 100 levels instead of 16 but is
 a second code path to keep identical across two implementations, so it
 is deliberately unused.

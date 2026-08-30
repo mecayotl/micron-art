@@ -3,7 +3,7 @@
 #
 # Run this after touching the converter. The committed .mu files must
 # match what this produces byte for byte; if they do not, either the
-# converter changed behaviour or someone hand-edited generated output.
+# converter changed behavior or someone hand-edited generated output.
 #
 #   examples/regenerate.sh
 #

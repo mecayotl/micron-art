@@ -77,7 +77,7 @@ def test_quantization_rounds():
     assert micron_color((255, 128, 0)) == "f80"
 
 
-def test_xterm256_cube_and_greys():
+def test_xterm256_cube_and_grays():
     assert xterm256(196) == (255, 0, 0)
     assert xterm256(46) == (0, 255, 0)
     assert xterm256(21) == (0, 0, 255)

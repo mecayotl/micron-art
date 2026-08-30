@@ -31,8 +31,8 @@ export function xterm256(index) {
       CUBE_LEVELS[n % 6],
     ];
   }
-  const grey = 8 + 10 * (index - 232);
-  return [grey, grey, grey];
+  const gray = 8 + 10 * (index - 232);
+  return [gray, gray, gray];
 }
 
 // Quantize one 8-bit channel to a hex nibble.

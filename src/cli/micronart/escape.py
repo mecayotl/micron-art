@@ -1,7 +1,7 @@
 """Input normalization and Micron escaping.
 
 Mirrors src/escape.js. See tests/fixtures/README.md for the parser
-behaviour each rule encodes.
+behavior each rule encodes.
 """
 
 TAB_STOP = 4

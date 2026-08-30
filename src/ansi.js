@@ -136,7 +136,7 @@ export function applySgr(style, params, warnings) {
 // Parse normalized lines into { parsed, warnings }.
 //
 // Each cell is a { style, char } pair. Graphic state carries across line
-// boundaries, matching terminal behaviour.
+// boundaries, matching terminal behavior.
 export function parseLines(lines) {
   const style = newStyle();
   const warnings = [];

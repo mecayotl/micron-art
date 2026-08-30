@@ -29,8 +29,8 @@ def xterm256(index):
     if index < 232:
         n = index - 16
         return (CUBE_LEVELS[n // 36], CUBE_LEVELS[(n // 6) % 6], CUBE_LEVELS[n % 6])
-    grey = 8 + 10 * (index - 232)
-    return (grey, grey, grey)
+    gray = 8 + 10 * (index - 232)
+    return (gray, gray, gray)
 
 
 def nibble(value):

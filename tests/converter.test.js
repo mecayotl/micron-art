@@ -72,7 +72,7 @@ test("quantization rounds rather than truncating", () => {
   assert.equal(micronColor([255, 128, 0]), "f80");
 });
 
-test("xterm256 resolves cube and greys", () => {
+test("xterm256 resolves cube and grays", () => {
   assert.deepEqual(xterm256(196), [255, 0, 0]);
   assert.deepEqual(xterm256(46), [0, 255, 0]);
   assert.deepEqual(xterm256(21), [0, 0, 255]);
