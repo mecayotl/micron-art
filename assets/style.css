@@ -3,14 +3,14 @@
 :root {
   --bg: #121212;
   --panel: #2C2C2C;
-  --ink: #1c1c1a;
+  --ink: #e6e6df;
   --muted: #6a6a64;
   --line: #d9d9d3;
   --accent: #2f6f4f;
   --warn-bg: #fdf3d8;
-  --warn-ink: #6b4e00;
+  --warn-ink: #e6e6df;
   --term-bg: #14140f;
-  --term-ink: #dddddd;
+  --term-ink: #e6e6df;
   --mono: ui-monospace, "SF Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
 }
 
