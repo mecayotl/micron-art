@@ -17,7 +17,7 @@
 >>Literal mode
 
 Wrapped in \`=, emitted verbatim. Nothing inside needs escaping, and
-nothing inside can be coloured.
+nothing inside can be colored.
 
 `=
         /\
@@ -30,11 +30,11 @@ nothing inside can be coloured.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 `=
 
->>Escaped mode, with colour applied
+>>Escaped mode, with color applied
 
 The same art, escaped in place instead of wrapped. Because markup still
-works, a colour tag ahead of it applies to the whole block -- Micron
-carries colour state across lines.
+works, a color tag ahead of it applies to the whole block -- Micron
+carries color state across lines.
 
 `F0c0
         /\\
@@ -49,7 +49,7 @@ carries colour state across lines.
 
 >>Converted from ANSI
 
-Colour read from SGR escape sequences and mapped to Micron tags. Source
+Color read from SGR escape sequences and mapped to Micron tags. Source
 was a .ans file; see docs/ansi-mapping.md for what survives
 the conversion and what does not.
 

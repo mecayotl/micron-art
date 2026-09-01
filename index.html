@@ -16,7 +16,6 @@
       <h1>micron-art</h1>
       <p class="tagline">ASCII and ANSI art to NomadNet Micron markup</p>
     </header>
-
     <main>
       <section class="panel" aria-labelledby="art-heading">
         <div class="panel-head">
@@ -57,15 +56,15 @@
 
       <section class="panel" aria-labelledby="preview-heading">
         <div class="panel-head">
-          <h2 id="preview-heading">Preview</h2>
+          <h2 id="preview-heading">NomadNet Preview</h2>
         </div>
-        <div id="preview" class="preview" aria-live="polite"></div>
-        <p class="hint">
-          Read back through a Micron reader: what NomadNet should show.
+         <p class="hint">
+          Rendered through Micron. 
           <strong>Monochrome</strong> writes <code>literal</code> mode,
-          <strong>Keep Color</strong> writes <code>escaped</code> — the names
-          the CLI and the downloaded file use.
+          <strong>Keep Color</strong> writes <code>escaped</code>.
         </p>
+        <div id="preview" class="preview" aria-live="polite"></div>
+       
       </section>
     </main>
     <script type="module" src="src/app.js"></script>

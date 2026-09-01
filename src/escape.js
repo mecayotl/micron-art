@@ -1,7 +1,7 @@
 // Input normalization and Micron escaping.
 //
 // Mirrors cli/micronart/escape.py. See tests/fixtures/README.md for the
-// parser behaviour each rule encodes.
+// parser behavior each rule encodes.
 
 export const TAB_STOP = 4;
 

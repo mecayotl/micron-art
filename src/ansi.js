@@ -16,10 +16,10 @@ import { XTERM16, xterm256 } from "./palette.js";
 
 export const SGR_PATTERN = /\x1b\[([0-9;]*)m/g;
 
-// Graphic state for one cell. A null colour means the document default.
+// Graphic state for one cell. A null color means the document default.
 export function newStyle() {
-  // `reverse` is recorded, not applied. The colours keep the slots they
-  // were named for and the swap happens at emission, so a colour set
+  // `reverse` is recorded, not applied. The colors keep the slots they
+  // were named for and the swap happens at emission, so a color set
   // while reverse is active lands where a terminal would put it. See
   // effectiveColors in converter.js.
   return {
@@ -106,7 +106,7 @@ export function applySgr(style, params, warnings) {
       if (i + 1 < codes.length && codes[i + 1] === 5 && i + 2 < codes.length) {
         const index = codes[i + 2];
         if (!(index >= 0 && index <= 255)) {
-          warnings.push(`colour index ${index} out of range: remainder ignored`);
+          warnings.push(`color index ${index} out of range: remainder ignored`);
           break;
         }
         color = xterm256(index);
@@ -114,7 +114,7 @@ export function applySgr(style, params, warnings) {
       } else if (i + 1 < codes.length && codes[i + 1] === 2 && i + 4 < codes.length) {
         const rgb = [codes[i + 2], codes[i + 3], codes[i + 4]];
         if (!rgb.every((value) => value >= 0 && value <= 255)) {
-          warnings.push("colour component out of range: remainder ignored");
+          warnings.push("color component out of range: remainder ignored");
           break;
         }
         color = rgb;
@@ -123,7 +123,7 @@ export function applySgr(style, params, warnings) {
         // The selector is missing or unparseable. Abandon the rest of the
         // sequence rather than reading its leftovers as further SGR
         // codes, which would apply attributes nobody asked for.
-        warnings.push("malformed extended colour sequence: remainder ignored");
+        warnings.push("malformed extended color sequence: remainder ignored");
         break;
       }
       if (isForeground) style.fg = color;
@@ -136,7 +136,7 @@ export function applySgr(style, params, warnings) {
 // Parse normalized lines into { parsed, warnings }.
 //
 // Each cell is a { style, char } pair. Graphic state carries across line
-// boundaries, matching terminal behaviour.
+// boundaries, matching terminal behavior.
 export function parseLines(lines) {
   const style = newStyle();
   const warnings = [];

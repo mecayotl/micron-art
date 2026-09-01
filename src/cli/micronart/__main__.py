@@ -22,7 +22,7 @@ def main(argv=None):
         choices=MODES,
         default=LITERAL,
         help="%s wraps the art verbatim and is monochrome; %s escapes in "
-        "place so colour can be applied (default: %%(default)s)" % (LITERAL, ESCAPED),
+        "place so color can be applied (default: %%(default)s)" % (LITERAL, ESCAPED),
     )
     args = parser.parse_args(argv)
 

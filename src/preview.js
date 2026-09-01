@@ -3,9 +3,9 @@
 //
 // This is deliberately a reader for the markup rather than a view of the
 // converter's internal state: previewing the actual output is what
-// catches a bad conversion. Behaviour follows nomadnet's MicronParser --
+// catches a bad conversion. Behavior follows nomadnet's MicronParser --
 // a formatting tag consumes exactly one character (three more for a
-// colour), a line-leading backslash is consumed as an escape, and a
+// color), a line-leading backslash is consumed as an escape, and a
 // comment line disappears entirely.
 //
 // Returns plain data, no DOM, so it can be tested under node.
@@ -42,9 +42,9 @@ function currentStyle(state) {
   };
 }
 
-// Expand a Micron colour to CSS. Three hex nibbles, or gNN for a point on
-// the grey ramp. Returns null for anything unparseable, which renders as
-// the default colour rather than throwing.
+// Expand a Micron color to CSS. Three hex nibbles, or gNN for a point on
+// the gray ramp. Returns null for anything unparseable, which renders as
+// the default color rather than throwing.
 export function micronColorToCss(color) {
   if (typeof color !== "string") return null;
   if (color.length !== 3) return null;

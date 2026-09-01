@@ -15,7 +15,7 @@ From anywhere:
 That rebuilds both `.mu` files from this directory in one command. Run it
 after any change to the converter — the committed `.mu` files must match
 what the script produces byte for byte. If they drift, either the
-converter changed behaviour or someone edited generated output by hand.
+converter changed behavior or someone edited generated output by hand.
 Both are worth knowing about.
 
 The exact conversion commands are repeated as Micron comments at the top
@@ -28,8 +28,8 @@ comment lines before rendering, so they cost nothing on the page.
 | File | Used for |
 |---|---|
 | `banner.txt` | the banner on the index page, literal mode |
-| `gallery-mono.txt` | shown twice — literal, then escaped with a colour tag |
-| `gallery-color.ans` | ANSI colour input, converted in escaped mode |
+| `gallery-mono.txt` | shown twice — literal, then escaped with a color tag |
+| `gallery-color.ans` | ANSI color input, converted in escaped mode |
 | `gallery-hazard.txt` | leading dashes, backticks and a leading hash |
 
 `gallery-hazard.txt` appears twice in the gallery: once pasted in raw so
@@ -38,8 +38,8 @@ full of characters Micron treats as block markup.
 
 ## Keeping art usable
 
-- **Left align it.** Never centre multi-line art with `` `c `` — Micron
-  centres each line independently, which shears the shape.
+- **Left align it.** Never center multi-line art with `` `c `` — Micron
+  centers each line independently, which shears the shape.
 - **Keep it narrow.** There is no hard limit, but art wider than a
   standard terminal wraps and the shape is lost. Everything here is
   under 30 columns, which leaves room for the two-space indent Micron

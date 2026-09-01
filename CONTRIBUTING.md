@@ -15,7 +15,7 @@ Step 2 is not ceremony. A fixture that passes before the change tests
 nothing, and it is easy to write one by accident.
 
 **Never edit an expected file to make a test pass.** Change it only when
-the Micron behaviour it encodes has been re-verified against a real
+the Micron behavior it encodes has been re-verified against a real
 render, and say so in the commit message.
 
 ## Verifying against a real render
@@ -26,7 +26,7 @@ style attributes both. That is what establishes a fixture is right,
 rather than the implementation grading its own homework.
 
 Reading the parser source is not sufficient on its own. Rendering is what
-caught colour bleeding to the terminal edge, and what corrected a wrong
+caught color bleeding to the terminal edge, and what corrected a wrong
 description of how dash-leading lines fail. Both looked fine on paper.
 
 If you have NomadNet installed, import `MicronParser` directly with a
@@ -57,7 +57,7 @@ change one, change the other in the same commit.
 Watch for these, which have all bitten before:
 
 - **Arrays compare by reference in JavaScript.** `[1,2,3] !== [1,2,3]`,
-  while Python compares tuples by value. Colours use an explicit
+  while Python compares tuples by value. Colors use an explicit
   component-wise comparison for this reason.
 - **`str.expandtabs` has no JavaScript equivalent**, and a fixed-width
   substitution gives different output. Tab expansion is written as an
@@ -98,18 +98,18 @@ not by reading its documentation:
   deleted unless protected. A leading backslash protects them and is
   consumed, costing zero columns.
 - Literal mode (`` `= ``) is safe for any art but disables markup, so it
-  is monochrome. Escaped mode keeps colour. They are not
+  is monochrome. Escaped mode keeps color. They are not
   interchangeable and neither is a fallback for the other.
-- Never centre multi-line art with `` `c `` — it centres each line
+- Never center multi-line art with `` `c `` — it centers each line
   independently and shears the shape.
 
 ## Style
 
 Match the surrounding code. Comments explain *why*, particularly where
-the behaviour is surprising — most of the non-obvious lines in this
+the behavior is surprising — most of the non-obvious lines in this
 project exist because of something specific in the Micron parser, and the
 comment is the only record of it.
 
 Commit messages should say what changed and why, and name what was
-verified. "Fixed the colour bug" is less useful than the measurement that
+verified. "Fixed the color bug" is less useful than the measurement that
 proved it was a bug.

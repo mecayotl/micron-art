@@ -50,7 +50,7 @@ for (const name of fixtureNames()) {
   }
 }
 
-test("colour tags survive the round trip", () => {
+test("color tags survive the round trip", () => {
   const { markup } = convert("\x1b[38;2;255;128;0mX\x1b[0m", "escaped");
   const lines = renderPreview(markup.replace(/\n$/, ""));
   assert.equal(lines.length, 1);
@@ -59,7 +59,7 @@ test("colour tags survive the round trip", () => {
   assert.equal(lines[0].segments[0].fg, "f80");
 });
 
-test("literal mode carries no colour", () => {
+test("literal mode carries no color", () => {
   const { markup } = convert("\x1b[31mRED\x1b[0m", "literal");
   const lines = renderPreview(markup.replace(/\n$/, ""));
   assert.equal(lines[0].segments[0].text, "RED");
@@ -86,7 +86,7 @@ test("unescaped block characters are mangled, escaped ones are not", () => {
   assert.equal(renderPreview(">> head")[0].depth, 2);
 });
 
-test("a colour tag consumes exactly three characters", () => {
+test("a color tag consumes exactly three characters", () => {
   // The tag eats five of the eight characters: `Fff0000 sets ff0 and
   // renders the literal text 000.
   const lines = renderPreview("`Fff0000SIX");
@@ -94,13 +94,13 @@ test("a colour tag consumes exactly three characters", () => {
   assert.equal(lines[0].segments[0].text, "000SIX");
 });
 
-test("colour state persists across lines", () => {
+test("color state persists across lines", () => {
   const lines = renderPreview("`Ff00RED\nSECOND");
   assert.equal(lines[0].segments[0].fg, "f00");
   assert.equal(lines[1].segments[0].fg, "f00");
 });
 
-test("micron colours expand to CSS", () => {
+test("micron colors expand to CSS", () => {
   assert.equal(micronColorToCss("f80"), "#ff8800");
   assert.equal(micronColorToCss("000"), "#000000");
   assert.equal(micronColorToCss("g99"), "#ffffff");

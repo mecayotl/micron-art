@@ -26,19 +26,19 @@ redirecting output keeps them visible.
 ## Modes
 
     literal   wrapped in `=, emitted verbatim, monochrome
-    escaped   characters escaped in place, colour tags applied
+    escaped   characters escaped in place, color tags applied
 
 They are not interchangeable and neither is a fallback for the other.
 Literal mode is safe for any art but Micron disables markup inside the
-block, so colour is impossible. Escaped mode escapes each significant
-character in place, which leaves colour and formatting available.
+block, so color is impossible. Escaped mode escapes each significant
+character in place, which leaves color and formatting available.
 
-Feed ANSI input to escaped mode to keep the colour. Feeding it to
+Feed ANSI input to escaped mode to keep the color. Feeding it to
 literal mode is valid and strips every SGR sequence, leaving the glyphs.
 
 ## Layout
 
-    micronart/palette.py    colour tables, quantization to Micron's 12-bit space
+    micronart/palette.py    color tables, quantization to Micron's 12-bit space
     micronart/escape.py     normalization, tab expansion, Micron escaping
     micronart/ansi.py       SGR parsing into styled cells
     micronart/converter.py  the two output modes
