@@ -18,8 +18,7 @@ to make sure they stay in sync with each other.
 ## Two output modes
 **Literal** wraps the art in `` `= `` and displays it in a monochromatic format. 
 
-**Escaped** protects color and formatting of the original text art.
-This is the mode that keeps ANSI color.
+**Escaped** maintains the color and formatting of the original text art.
 
 ![ANSI art converted in escaped mode, with the preview showing the image rendered in color](docs/screenshot-color.png)
 
@@ -39,9 +38,6 @@ From the command line:
     micronart art.txt                          # literal mode, the default
     micronart -m escaped art.txt               # keeps color
     chafa image.png | micronart -m escaped
-
-Markup goes to standard output and warnings to standard error, so
-redirecting output keeps the warnings visible.
 
 To put a page on a node, write it into the pages directory and restart
 NomadNet:
@@ -64,7 +60,7 @@ Run the tests:
 
 Both tests read from `tests/fixtures/`.
 
-After changing the converter, rebuild the example pages and check nothing
+After changing the converter, rebuild the example pages and check that nothing
 moved:
 
     ./examples/regenerate.sh
@@ -82,8 +78,8 @@ moved:
 ## Documentation
 
 - **`docs/ansi-mapping.md`** — which SGR codes are handled, the color
-  tables, and what a 24-bit conversion gives up
-- **`tests/fixtures/README.md`** — set of files that tests are validated against
+  tables, and explains 24-bit conversion trade-offs
+- **`tests/fixtures/README.md`** — explains the set of files that the UI & CLI are validated against
 
 ## Contributing
 
