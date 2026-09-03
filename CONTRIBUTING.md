@@ -37,8 +37,10 @@ stubbed application object and render your markup.
     node --test tests/*.test.js
     python3 tests/test_converter.py
 
-No test runner, no dependencies. CI runs both across Python 3.9/3.11/3.13
-and Node 18/20/22.
+No test runner, no dependencies. CI runs Python across 3.9/3.11/3.13 and
+JavaScript on Node 22 alone — the browser modules are plain ES2020 with
+nothing version-sensitive in them, so extra Node versions ran the same
+code twice.
 
 If you touch the converter, rebuild the examples and check nothing moved:
 

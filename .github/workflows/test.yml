@@ -48,21 +48,26 @@ jobs:
           rm -f err.txt out.txt
 
   javascript:
-    name: node ${{ matrix.node-version }}
+    name: node
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ["18", "20", "22"]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "22"
 
+      # One version, not a matrix. The tested modules are plain ES2020
+      # string handling with no DOM and no version-sensitive features, so
+      # a second Node would run identical code down identical branches.
+      #
       # No install step: zero runtime dependencies, and the tests use
       # node's built-in runner rather than a test framework.
+      #
+      # The glob is expanded by the shell on purpose. Passing the bare
+      # directory `tests/` works up to Node 20 and breaks on 22, which
+      # reads the argument as a glob pattern instead. Nothing in CI
+      # re-checks that now, so leave the expansion alone.
       - name: Fixture tests
         run: node --test tests/*.test.js
 
