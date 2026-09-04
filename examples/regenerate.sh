@@ -7,7 +7,7 @@
 #
 #   examples/regenerate.sh
 #
-# No arguments. Safe to run from anywhere.
+
 
 set -eu
 
@@ -18,7 +18,7 @@ ART=examples/art
 OUT=examples
 export PYTHONPATH=src/cli
 
-# Convert one art file. Warnings go to stderr and stay visible.
+# Convert one art file. Warnings go to stderr.
 convert() {
     python3 -m micronart -m "$1" "$2"
 }
@@ -45,14 +45,14 @@ markup.
 
 >>Two modes, not interchangeable
 
-Literal wraps the art in \`=, so it survives exactly as drawn. Micron
+Literal wraps the art in \`=, so it is maintained as drawn. Micron
 disables markup inside the block, so it is monochrome.
 
 Escaped protects each significant character in place, which leaves
 color and formatting available. This is the mode that keeps ANSI
 color.
 
-Neither is a fallback for the other. Pick by whether you need color.
+Pick by whether you need color.
 
 >>Have a look
 
@@ -85,8 +85,7 @@ EOF
 
 >>Literal mode
 
-Wrapped in \`=, emitted verbatim. Nothing inside needs escaping, and
-nothing inside can be colored.
+Wrapped in \`=, emitted verbatim. Nothing inside needs escaping. Nothing inside can be colored.
 
 EOF
     convert literal "$ART/gallery-mono.txt"
@@ -95,7 +94,7 @@ EOF
 >>Escaped mode, with color applied
 
 The same art, escaped in place instead of wrapped. Because markup still
-works, a color tag ahead of it applies to the whole block -- Micron
+works, a color tag ahead of it applies to the whole block. Micron
 carries color state across lines.
 
 `F0c0
@@ -141,8 +140,7 @@ EOF
     cat <<'EOF'
 
 Every line is intact. The escape is a single backslash, which the parser
-consumes, so the art keeps its original column alignment -- nothing is
-shifted to make room.
+consumes, so the art keeps its original column alignment.
 EOF
 } > "$OUT/gallery.mu"
 
