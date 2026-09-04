@@ -16,7 +16,7 @@ const SAMPLE = [
   "--- MENU ---",
   "- new game",
   "- quit",
-  "# not a comment, just art",
+  "# not a comment",
   "`= literal-looking line",
 ].join("\n");
 
