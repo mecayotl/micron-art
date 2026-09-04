@@ -14,14 +14,11 @@ From anywhere:
 
 That rebuilds both `.mu` files from this directory in one command. Run it
 after any change to the converter — the committed `.mu` files must match
-what the script produces byte for byte. If they drift, either the
-converter changed behavior or someone edited generated output by hand.
-Both are worth knowing about.
+what the script produces byte for byte.
 
 The exact conversion commands are repeated as Micron comments at the top
 of each generated file, with paths relative to the repository root, so a
-single piece can be reproduced without reading the script. Micron drops
-comment lines before rendering, so they cost nothing on the page.
+single piece can be reproduced without reading the script. 
 
 ## The pieces
 
