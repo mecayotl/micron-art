@@ -16,8 +16,8 @@
 
 >>Literal mode
 
-Wrapped in \`=, emitted verbatim. Nothing inside needs escaping, and
-nothing inside can be colored.
+Wrapped in \`=, emitted verbatim. Nothing inside needs escaping. 
+Nothing inside can be colored.
 
 `=
         /\
@@ -61,7 +61,7 @@ the conversion and what does not.
 
 Micron gives block meaning to a line's first character. A dash draws a
 divider, a hash deletes the line, and an angle bracket makes a heading.
-Art that starts lines with those characters is mangled by the renderer
+Text that starts lines with those characters is mangled by the renderer
 before anyone sees it.
 
 Here is the raw art, pasted into this page with no conversion:
@@ -90,5 +90,4 @@ The same art, converted:
 \# uptime 14d
 
 Every line is intact. The escape is a single backslash, which the parser
-consumes, so the art keeps its original column alignment -- nothing is
-shifted to make room.
+consumes, so the art keeps its original column alignment.
