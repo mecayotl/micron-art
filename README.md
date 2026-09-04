@@ -49,7 +49,7 @@ NomadNet:
 Clone the repo, then start a server.
 Double clicking index.html won't work since browsers block ES module imports over file://. 
 
-    git clone https://github.com/YOUR-USERNAME/micron-art.git
+    git clone https://github.com/mecayotl/micron-art.git
     cd micron-art
     python3 -m http.server 8000
 
