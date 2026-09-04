@@ -15,10 +15,9 @@
 `=
 
 Converts ASCII and ANSI art into Micron markup you can serve from a
-NomadNet node. The art above is a converted file, not hand-written
-markup.
+NomadNet node. The art above is a converted file.
 
->>Two modes, not interchangeable
+>>Two modes
 
 Literal wraps the art in \`=, so it survives exactly as drawn. Micron
 disables markup inside the block, so it is monochrome.
@@ -27,7 +26,7 @@ Escaped protects each significant character in place, which leaves
 color and formatting available. This is the mode that keeps ANSI
 color.
 
-Neither is a fallback for the other. Pick by whether you need color.
+Pick by whether you need color.
 
 >>Have a look
 
