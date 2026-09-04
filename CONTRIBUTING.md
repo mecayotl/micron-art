@@ -2,32 +2,26 @@
 
 ## Fixtures first
 
-`tests/fixtures/` is the source of truth. Both implementations read it,
-and if they disagree that is a bug in one of them.
+`tests/fixtures/` is the source of truth. Both implementations read it.
+Discrepancies between them indicates there's a bug in one of them.
 
 So the order is:
 
-1. Write the fixture — an input, and the expected output for both modes
+1. Write the tests — there should be an input, and then the expected output for both modes
 2. Confirm it **fails** against the current code
 3. Make both implementations pass it
 
-Step 2 is not ceremony. A fixture that passes before the change tests
-nothing, and it is easy to write one by accident.
+Step 2 is to ensure that redundant tests are not created. Tests that pass before the actual
+change have no purpose. 
 
 **Never edit an expected file to make a test pass.** Change it only when
 the Micron behavior it encodes has been re-verified against a real
-render, and say so in the commit message.
+render.
 
 ## Verifying against a real render
 
 Expected output in this repository was checked by rendering it through
-NomadNet's own parser and reading the resulting canvas back — glyphs and
-style attributes both. That is what establishes a fixture is right,
-rather than the implementation grading its own homework.
-
-Reading the parser source is not sufficient on its own. Rendering is what
-caught color bleeding to the terminal edge, and what corrected a wrong
-description of how dash-leading lines fail. Both looked fine on paper.
+NomadNet's own parser and reading the resulting canvas back.
 
 If you have NomadNet installed, import `MicronParser` directly with a
 stubbed application object and render your markup.
@@ -37,8 +31,8 @@ stubbed application object and render your markup.
     node --test tests/*.test.js
     python3 tests/test_converter.py
 
-No test runner, no dependencies. CI runs both across Python 3.9/3.11/3.13
-and Node 18/20/22.
+CI runs both across Python 3.9/3.11/3.13
+and Node 22.
 
 If you touch the converter, rebuild the examples and check nothing moved:
 
@@ -54,14 +48,14 @@ lost on the next regeneration.
 `src/cli/micronart/*.py` mirrors `src/*.js` module for module. When you
 change one, change the other in the same commit.
 
-Watch for these, which have all bitten before:
+Lessons learned from past commits:
 
 - **Arrays compare by reference in JavaScript.** `[1,2,3] !== [1,2,3]`,
   while Python compares tuples by value. Colors use an explicit
   component-wise comparison for this reason.
 - **`str.expandtabs` has no JavaScript equivalent**, and a fixed-width
   substitution gives different output. Tab expansion is written as an
-  explicit column walk in both.
+  explicit column width in both.
 - **The empty string is a substring of everything.** `"" in ">-<#"` is
   `True` in Python and `"".includes("")` is `true` in JavaScript, so
   blank lines need an explicit guard.
@@ -70,11 +64,7 @@ Watch for these, which have all bitten before:
 
 ## Hard constraints
 
-These are not preferences. Changing any of them changes what the project
-is.
-
-- **No npm, no build step, no bundler, zero runtime dependencies.** What
-  is in the repository is what runs.
+- **Zero runtime dependencies.** What is in the repository is what runs.
 - **Browser code is ES modules in `src/`**, loaded with
   `<script type="module">`. Module imports fail over `file://`, so a
   local server is required: `python3 -m http.server 8000`.
@@ -89,8 +79,7 @@ is.
 
 ## Micron rules worth knowing before you start
 
-These were established by rendering markup through NomadNet's own parser,
-not by reading its documentation:
+These were established by rendering markup through NomadNet's own parser:
 
 - A backtick opens a tag, so a backtick in art becomes `` \` `` and a
   backslash becomes `\\`.
