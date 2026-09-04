@@ -16,8 +16,7 @@
 
 >>Literal mode
 
-Wrapped in \`=, emitted verbatim. Nothing inside needs escaping. 
-Nothing inside can be colored.
+Wrapped in \`=, emitted verbatim. Nothing inside needs escaping. Nothing inside can be colored.
 
 `=
         /\
@@ -33,7 +32,7 @@ Nothing inside can be colored.
 >>Escaped mode, with color applied
 
 The same art, escaped in place instead of wrapped. Because markup still
-works, a color tag ahead of it applies to the whole block -- Micron
+works, a color tag ahead of it applies to the whole block. Micron
 carries color state across lines.
 
 `F0c0

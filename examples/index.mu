@@ -19,7 +19,7 @@ NomadNet node. The art above is a converted file.
 
 >>Two modes
 
-Literal wraps the art in \`=, so it survives exactly as drawn. Micron
+Literal wraps the art in \`=, so it is maintained as drawn. Micron
 disables markup inside the block, so it is monochrome.
 
 Escaped protects each significant character in place, which leaves

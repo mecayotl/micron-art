@@ -40,10 +40,9 @@ EOF
     cat <<'EOF'
 
 Converts ASCII and ANSI art into Micron markup you can serve from a
-NomadNet node. The art above is a converted file, not hand-written
-markup.
+NomadNet node. The art above is a converted file.
 
->>Two modes, not interchangeable
+>>Two modes
 
 Literal wraps the art in \`=, so it is maintained as drawn. Micron
 disables markup inside the block, so it is monochrome.
@@ -117,7 +116,7 @@ EOF
 
 Micron gives block meaning to a line's first character. A dash draws a
 divider, a hash deletes the line, and an angle bracket makes a heading.
-Art that starts lines with those characters is mangled by the renderer
+Text that starts lines with those characters is mangled by the renderer
 before anyone sees it.
 
 Here is the raw art, pasted into this page with no conversion:
