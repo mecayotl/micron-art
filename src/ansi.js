@@ -2,7 +2,7 @@
 //
 // Reduces ANSI input to a grid of cells, each carrying the graphic state
 // that applies to one character. Plain text parses cleanly through here
-// too: every cell simply carries the default state, which lets both input
+// too: every cell carries the default state, which lets both input
 // kinds share one conversion path.
 //
 // Only SGR (ESC [ ... m) sequences are handled. Symbol-format chafa output
